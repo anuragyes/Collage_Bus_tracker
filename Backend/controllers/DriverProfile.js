@@ -4,6 +4,7 @@ import Driver from "../models/DriverModel.js"
 import Bus from "../models/Busmodel.js"
 
 
+
 export const startDriverRide = async (req, res) => {
     try {
         const { email, password, busNumber } = req.body;
@@ -18,13 +19,13 @@ export const startDriverRide = async (req, res) => {
         if (!isMatch) {
             return res.status(401).json({ message: "Invalid email or password" });
         }
-        
+
         // 2. Find the bus by the provided busNumber.
         const bus = await Bus.findOne({ busNumber });
         if (!bus) {
             return res.status(404).json({ message: "Bus number not found or not registered by the school" });
         }
-        
+
         // 3. Check if the bus is already assigned.
         if (bus.isAssigned) {
             // Check if the current driver is the one assigned to this bus.
@@ -32,7 +33,7 @@ export const startDriverRide = async (req, res) => {
                 return res.status(409).json({ message: "This bus is currently in use by another driver" });
             }
         }
-        
+
         // 4. Update both the driver and bus documents.
         // Link the driver's ID to the bus and mark the bus as assigned.
         bus.isAssigned = true;
@@ -44,7 +45,7 @@ export const startDriverRide = async (req, res) => {
         driver.busNumber = busNumber;
         driver.isDriving = true;
         await driver.save();
-        
+
         // 5. Generate a token and send a successful response.
         const token = genToken(driver._id);
         res.cookie("token", token, {
@@ -64,3 +65,7 @@ export const startDriverRide = async (req, res) => {
         res.status(500).json({ message: "Server error. Please try again later." });
     }
 };
+
+
+
+

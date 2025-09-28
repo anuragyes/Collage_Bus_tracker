@@ -1,369 +1,246 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-import io from 'socket.io-client';
-// import './StudentLiveTracker.css';
-import './StudentMapDashboard.css';
 
-// Fix for default markers
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-});
+import React, { useState, useEffect, useRef } from "react";
+import toast, { Toaster } from "react-hot-toast";
+import { User, MapPin, BusFront, Phone, Power, LogOut, Navigation } from "lucide-react";
+import { io } from "socket.io-client";
+import { GoogleMap, Marker, useLoadScript, InfoWindow } from "@react-google-maps/api";
+import { useNavigate, useLocation } from "react-router-dom";
 
-// Custom icons
-const busIcon = new L.Icon({
-  iconUrl: 'https://cdn-icons-png.flaticon.com/512/3233/3233158.png',
-  iconSize: [35, 35],
-  iconAnchor: [17, 35],
-  popupAnchor: [0, -35],
-});
+const SOCKET_IO_URL = "http://localhost:5000";
+const GOOGLE_MAPS_API_KEY = "AIzaSyCGHZtNx-x6Z0jOJdc2s1O5e0_xA84mX5k";
 
-const studentIcon = new L.Icon({
-  iconUrl: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png',
-  iconSize: [30, 30],
-  iconAnchor: [15, 30],
-  popupAnchor: [0, -30],
-});
+const socket = io(SOCKET_IO_URL, { withCredentials: true });
 
-const busStopIcon = new L.Icon({
-  iconUrl: 'https://cdn-icons-png.flaticon.com/512/484/484167.png',
-  iconSize: [25, 25],
-  iconAnchor: [12, 25],
-  popupAnchor: [0, -25],
-});
-
-const socket = io('http://localhost:5000');
-
-// Calculate distance between two coordinates (Haversine formula)
-const calculateDistance = (lat1, lon1, lat2, lon2) => {
-  const R = 6371; // Earth's radius in km
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = 
-    Math.sin(dLat/2) * Math.sin(dLat/2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-    Math.sin(dLon/2) * Math.sin(dLon/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  return R * c; // Distance in km
+const mapContainerStyle = {
+  width: "100%",
+  height: "100%",
+  borderRadius: "12px",
+  boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)"
 };
 
-// Component to track student's location
-function StudentLocationTracker({ onLocationUpdate }) {
-  const [position, setPosition] = useState(null);
-  const map = useMap();
+const defaultCenter = { lat: 28.7041, lng: 77.1025 };
+
+const busIcon = { url: "https://maps.google.com/mapfiles/ms/icons/bus.png", scaledSize: { width: 32, height: 32 } };
+const userIcon = { url: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png", scaledSize: { width: 24, height: 24 } };
+const nearbyBusIcon = { url: "https://maps.google.com/mapfiles/ms/icons/red-dot.png", scaledSize: { width: 32, height: 32 } };
+
+const InfoCard = ({ icon: Icon, title, value, color }) => (
+  <div className="bg-white p-4 rounded-xl shadow-lg border-l-4 border-l-gray-300 transition-all duration-300 hover:shadow-2xl">
+    <div className="flex items-center space-x-3">
+      <Icon className={`w-6 h-6 ${color}`} />
+      <div>
+        <p className="text-xs font-semibold uppercase text-gray-500">{title}</p>
+        <p className="text-lg font-bold text-gray-800 break-words">{value}</p>
+      </div>
+    </div>
+  </div>
+);
+
+const LiveMap = ({ userLocation, nearbyBuses, selectedBus, setSelectedBus }) => {
+  const { isLoaded, loadError } = useLoadScript({ googleMapsApiKey: GOOGLE_MAPS_API_KEY });
+  const mapRef = useRef(null);
+  const onMapLoad = (map) => { mapRef.current = map; };
 
   useEffect(() => {
-    if (!navigator.geolocation) {
-      alert("Geolocation is not supported by your browser");
-      return;
+    if (mapRef.current && userLocation) {
+      mapRef.current.panTo({ lat: userLocation.latitude, lng: userLocation.longitude });
     }
+  }, [userLocation]);
 
-    const watchId = navigator.geolocation.watchPosition(
-      (pos) => {
-        const newPosition = {
-          lat: pos.coords.latitude,
-          lng: pos.coords.longitude,
-          accuracy: pos.coords.accuracy
-        };
-        
-        setPosition(newPosition);
-        onLocationUpdate(newPosition);
-        
-        // Center map on student's position
-        map.setView([newPosition.lat, newPosition.lng], 15);
-      },
-      (error) => {
-        console.error("Error getting location:", error);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0
-      }
-    );
-
-    return () => navigator.geolocation.clearWatch(watchId);
-  }, [map, onLocationUpdate]);
-
-  if (!position) return null;
+  if (loadError) return <div className="bg-white p-6 rounded-2xl shadow-xl text-center text-red-500 py-8">Error loading Google Maps.</div>;
+  if (!isLoaded) return <div className="bg-white p-6 rounded-2xl shadow-xl text-center py-8"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div><p className="text-gray-600">Loading maps...</p></div>;
 
   return (
-    <Marker position={[position.lat, position.lng]} icon={studentIcon}>
-      <Popup>
-        <div>
-          <strong>Your Location</strong><br />
-          Latitude: {position.lat.toFixed(6)}<br />
-          Longitude: {position.lng.toFixed(6)}<br />
-          Accuracy: {position.accuracy ? `${position.accuracy.toFixed(1)}m` : 'Unknown'}
-        </div>
-      </Popup>
-    </Marker>
-  );
-}
-
-// Component to handle bus locations via socket
-function BusLocationsTracker({ studentPosition, onBusesUpdate }) {
-  useEffect(() => {
-    socket.on('busLocation', (data) => {
-      onBusesUpdate(prevBuses => ({
-        ...prevBuses,
-        [data.busId]: {
-          ...data,
-          lastUpdate: new Date(),
-          // Calculate distance from student if student position is available
-          distance: studentPosition ? 
-            calculateDistance(
-              studentPosition.lat, 
-              studentPosition.lng, 
-              data.latitude, 
-              data.longitude
-            ) : null
-        }
-      }));
-    });
-
-    socket.on('bus_offline', (busId) => {
-      onBusesUpdate(prevBuses => {
-        const updated = { ...prevBuses };
-        delete updated[busId];
-        return updated;
-      });
-    });
-
-    return () => {
-      socket.off('busLocation');
-      socket.off('bus_offline');
-    };
-  }, [studentPosition, onBusesUpdate]);
-
-  return null;
-}
-
-const StudentMapDashboard = () => {
-  const [studentPosition, setStudentPosition] = useState(null);
-  const [buses, setBuses] = useState({});
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedBus, setSelectedBus] = useState(null);
-  const [showBusList, setShowBusList] = useState(true);
-  const [connectionStatus, setConnectionStatus] = useState('Connecting...');
-
-  // Socket connection management
-  useEffect(() => {
-    socket.on('connect', () => {
-      console.log('Connected to server');
-      setConnectionStatus('Connected');
-    });
-
-    socket.on('disconnect', () => {
-      console.log('Disconnected from server');
-      setConnectionStatus('Disconnected');
-    });
-
-    // Request active buses
-    socket.emit('get_active_buses');
-
-    return () => {
-      socket.disconnect();
-    };
-  }, []);
-
-  // Filter and sort buses based on search and distance
-  const filteredBuses = Object.entries(buses)
-    .filter(([busId, bus]) => 
-      busId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (bus.busNumber && bus.busNumber.toLowerCase().includes(searchTerm.toLowerCase()))
-    )
-    .sort(([, busA], [, busB]) => {
-      if (!studentPosition) return 0;
-      const distA = busA.distance || Infinity;
-      const distB = busB.distance || Infinity;
-      return distA - distB;
-    })
-    .slice(0, 10); // Show top 10 closest buses
-
-  // Calculate ETA for a bus (mock function - replace with real API)
-  const calculateETA = (bus) => {
-    if (!bus.distance || !studentPosition) return 'Unknown';
-    
-    // Mock ETA calculation: 2 minutes per km + 5 minutes base
-    const etaMinutes = Math.round(bus.distance * 2 + 5);
-    return `${etaMinutes} mins`;
-  };
-
-  // Handle bus selection
-  const handleBusSelect = (busId, bus) => {
-    setSelectedBus(busId);
-    // You can add map centering logic here
-  };
-
-  return (
-    <div className="student-tracker-container">
-      {/* Header */}
-      <div className="tracker-header">
-        <div className="header-left">
-          <h1>🚌 College Bus Tracker</h1>
-          <div className="status-indicator">
-            <span className={`connection-status ${connectionStatus.toLowerCase()}`}>
-              {connectionStatus}
-            </span>
-            <span className="student-status">
-              {studentPosition ? 'Location: Active' : 'Location: Inactive'}
-            </span>
-          </div>
-        </div>
-        
-        <div className="search-container">
-          <input
-            type="text"
-            placeholder="Search by bus number..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="search-input"
-          />
-          <button 
-            onClick={() => setShowBusList(!showBusList)}
-            className="toggle-list-btn"
-          >
-            {showBusList ? 'Hide List' : 'Show Buses'}
-          </button>
-        </div>
+    <div className="bg-white p-2 sm:p-4 rounded-2xl shadow-xl h-full">
+      <div className="flex items-center space-x-2 mb-4">
+        <MapPin className="w-6 h-6 text-green-600" />
+        <h2 className="text-xl font-bold text-gray-800">Live Bus Tracking</h2>
       </div>
-
-      <div className="content-area">
-        {/* Bus List Sidebar */}
-        {showBusList && (
-          <div className="bus-list-sidebar">
-            <h3>Nearby Buses ({filteredBuses.length})</h3>
-            <div className="bus-list">
-              {filteredBuses.length === 0 ? (
-                <div className="no-buses">No buses found</div>
-              ) : (
-                filteredBuses.map(([busId, bus]) => (
-                  <div
-                    key={busId}
-                    className={`bus-item ${selectedBus === busId ? 'selected' : ''}`}
-                    onClick={() => handleBusSelect(busId, bus)}
-                  >
-                    <div className="bus-info">
-                      <div className="bus-number">Bus {busId}</div>
-                      <div className="bus-distance">
-                        {bus.distance ? `${bus.distance.toFixed(1)} km away` : 'Distance unknown'}
-                      </div>
-                    </div>
-                    <div className="bus-eta">
-                      ETA: {calculateETA(bus)}
-                    </div>
-                    <div className="bus-status">
-                      <span className="live-dot"></span>
-                      Live
-                    </div>
-                  </div>
-                ))
-              )}
+      <GoogleMap
+        mapContainerStyle={mapContainerStyle}
+        zoom={15}
+        center={userLocation ? { lat: userLocation.latitude, lng: userLocation.longitude } : defaultCenter}
+        onLoad={onMapLoad}
+        options={{ streetViewControl: false, mapTypeControl: false, fullscreenControl: true, zoomControl: true }}
+      >
+        {userLocation && <Marker position={{ lat: userLocation.latitude, lng: userLocation.longitude }} icon={userIcon} title="Your Location" />}
+        {nearbyBuses.map(bus => bus.location && (
+          <Marker key={bus.busId} position={{ lat: bus.location.latitude, lng: bus.location.longitude }} icon={busIcon} onClick={() => setSelectedBus(bus)} title={`Bus ${bus.busId}`} />
+        ))}
+        {selectedBus && selectedBus.location && (
+          <InfoWindow position={{ lat: selectedBus.location.latitude, lng: selectedBus.location.longitude }} onCloseClick={() => setSelectedBus(null)}>
+            <div className="p-2">
+              <h3 className="font-bold text-lg">{selectedBus.busId}</h3>
+              <p className="text-sm">Driver: {selectedBus.driverName || "Unknown"}</p>
+              <p className="text-sm text-gray-600">Last update: {new Date().toLocaleTimeString()}</p>
             </div>
-          </div>
+          </InfoWindow>
         )}
-
-        {/* Map Container */}
-        <div className="map-container">
-          <MapContainer
-            center={[28.6139, 77.2090]}
-            zoom={13}
-            style={{ height: '100%', width: '100%' }}
-          >
-            <TileLayer
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution='&copy; OpenStreetMap contributors'
-            />
-            
-            {/* Student Location */}
-            <StudentLocationTracker onLocationUpdate={setStudentPosition} />
-            
-            {/* Bus Locations */}
-            <BusLocationsTracker 
-              studentPosition={studentPosition} 
-              onBusesUpdate={setBuses} 
-            />
-
-            {/* Bus Markers */}
-            {Object.entries(buses).map(([busId, bus]) => (
-              <Marker 
-                key={busId} 
-                position={[bus.latitude, bus.longitude]} 
-                icon={busIcon}
-                eventHandlers={{
-                  click: () => handleBusSelect(busId, bus),
-                }}
-              >
-                <Popup>
-                  <div className="bus-popup">
-                    <h4>Bus {busId}</h4>
-                    <p><strong>Distance:</strong> {bus.distance ? `${bus.distance.toFixed(2)} km` : 'Calculating...'}</p>
-                    <p><strong>ETA:</strong> {calculateETA(bus)}</p>
-                    <p><strong>Last Update:</strong> {bus.lastUpdate ? bus.lastUpdate.toLocaleTimeString() : 'Unknown'}</p>
-                    <button 
-                      onClick={() => handleBusSelect(busId, bus)}
-                      className="track-bus-btn"
-                    >
-                      Track This Bus
-                    </button>
-                  </div>
-                </Popup>
-              </Marker>
-            ))}
-
-            {/* Bus Stop Markers (Example) */}
-            {studentPosition && (
-              <Marker 
-                position={[studentPosition.lat + 0.005, studentPosition.lng + 0.005]} 
-                icon={busStopIcon}
-              >
-                <Popup>
-                  <div>
-                    <strong>College Bus Stop</strong><br />
-                    Main Campus Entrance
-                  </div>
-                </Popup>
-              </Marker>
-            )}
-          </MapContainer>
-        </div>
-      </div>
-
-      {/* Selected Bus Info Panel */}
-      {selectedBus && buses[selectedBus] && (
-        <div className="selected-bus-panel">
-          <div className="bus-details">
-            <h3>Bus {selectedBus}</h3>
-            <div className="bus-stats">
-              <div className="stat">
-                <label>Distance:</label>
-                <span>{buses[selectedBus].distance ? `${buses[selectedBus].distance.toFixed(2)} km` : 'Calculating...'}</span>
-              </div>
-              <div className="stat">
-                <label>ETA:</label>
-                <span>{calculateETA(buses[selectedBus])}</span>
-              </div>
-              <div className="stat">
-                <label>Last Update:</label>
-                <span>{buses[selectedBus].lastUpdate ? buses[selectedBus].lastUpdate.toLocaleTimeString() : 'Unknown'}</span>
-              </div>
-            </div>
-          </div>
-          <button 
-            onClick={() => setSelectedBus(null)}
-            className="close-panel-btn"
-          >
-            Close
-          </button>
-        </div>
-      )}
+      </GoogleMap>
     </div>
   );
 };
 
-export default StudentMapDashboard
+const StudentMapDashboard = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const studentData = location.state?.studentData;
+  
+  const [user, setUser] = useState(studentData || { name: "Student Name", email: "student@school.edu", phoneNumber: "N/A", busId: "B-001" });
+  const [userLocation, setUserLocation] = useState(null);
+  const [nearbyBuses, setNearbyBuses] = useState([]);
+  const [selectedBus, setSelectedBus] = useState(null);
+  const [notifications, setNotifications] = useState([]);
+  const [isConnected, setIsConnected] = useState(false);
+
+  useEffect(() => { if (!studentData) navigate('/student-login'); }, [studentData, navigate]);
+
+  useEffect(() => {
+    let watchId;
+    if (navigator.geolocation) {
+      watchId = navigator.geolocation.watchPosition(
+        (position) => setUserLocation({ latitude: position.coords.latitude, longitude: position.coords.longitude }),
+        (error) => { console.error(error); toast.error("Unable to get your location."); },
+        { enableHighAccuracy: true, maximumAge: 0, timeout: 5000, distanceFilter: 10 }
+      );
+    }
+    return () => { if (watchId) navigator.geolocation.clearWatch(watchId); };
+  }, []);
+
+  useEffect(() => {
+    socket.on("connect", () => setIsConnected(true));
+    socket.on("disconnect", () => setIsConnected(false));
+    socket.emit("student_subscribe", { studentId: user.email || "student123", location: userLocation });
+    socket.on("initial_bus_locations", (data) => setNearbyBuses(data.activeBuses || []));
+    socket.on("bus_location_update", (data) => setNearbyBuses(prev => {
+      const idx = prev.findIndex(bus => bus.busId === data.busId);
+      if (idx >= 0) { const updated = [...prev]; updated[idx] = { ...updated[idx], location: { latitude: data.latitude, longitude: data.longitude }, timestamp: data.timestamp }; return updated; }
+      else return [...prev, { busId: data.busId, driverName: data.driverName, location: { latitude: data.latitude, longitude: data.longitude }, timestamp: data.timestamp }];
+    }));
+    socket.on("bus_removed", ({ busId }) => { setNearbyBuses(prev => prev.filter(bus => bus.busId !== busId)); if (selectedBus?.busId === busId) setSelectedBus(null); });
+    socket.on("bus_nearby", (data) => { const notif = { id: Date.now(), type: 'info', message: `Bus ${data.busId} is ${(data.distance / 1000).toFixed(1)}km away!`, timestamp: new Date().toLocaleTimeString() }; setNotifications(prev => [notif, ...prev.slice(0,5)]); toast.success(`Bus ${data.busId} is approaching!`); });
+    return () => { socket.off(); };
+  }, [user.email, userLocation, selectedBus]);
+
+  useEffect(() => {
+    if (!userLocation || nearbyBuses.length === 0) return;
+    const interval = setInterval(() => {
+      nearbyBuses.forEach(bus => {
+        if (bus.location) {
+          const distance = calculateDistance(userLocation.latitude, userLocation.longitude, bus.location.latitude, bus.location.longitude);
+          if (distance <= 3000 && distance > 500) socket.emit("bus_nearby_alert", { busId: bus.busId, studentId: user.email, distance: distance, studentLocation: userLocation });
+        }
+      });
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [userLocation, nearbyBuses, user.email]);
+
+  const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 6371e3; const φ1 = lat1 * Math.PI / 180; const φ2 = lat2 * Math.PI / 180; const Δφ = (lat2-lat1)*Math.PI/180; const Δλ = (lon2-lon1)*Math.PI/180;
+    const a = Math.sin(Δφ/2)**2 + Math.cos(φ1)*Math.cos(φ2)*Math.sin(Δλ/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  };
+
+  const getClosestBus = () => {
+    if (!userLocation || nearbyBuses.length === 0) return null;
+    return nearbyBuses.reduce((closest, bus) => {
+      if (!bus.location) return closest;
+      const distance = calculateDistance(userLocation.latitude, userLocation.longitude, bus.location.latitude, bus.location.longitude);
+      return !closest || distance < closest.distance ? { bus, distance } : closest;
+    }, null);
+  };
+
+  const closestBus = getClosestBus();
+  const handleLogout = () => { socket.disconnect(); navigate('/'); toast.success("Logged out successfully!"); };
+  const clearNotification = (id) => setNotifications(prev => prev.filter(notif => notif.id !== id));
+  const refreshBuses = () => { socket.emit("student_subscribe", { studentId: user.email || "student123", location: userLocation }); toast.success("Refreshing bus locations..."); };
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 md:p-8">
+      <Toaster position="top-center" reverseOrder={false} />
+      
+      {/* Header */}
+      <div className="max-w-7xl mx-auto mb-6">
+        <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Student Dashboard</h1>
+            <p className="text-gray-600">Welcome back, {user.name}!</p>
+          </div>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
+            <div className={`px-3 py-1 rounded-full ${isConnected ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{isConnected ? 'Connected' : 'Disconnected'}</div>
+            <button onClick={refreshBuses} className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"><Navigation className="w-4 h-4 mr-2" />Refresh</button>
+            <button onClick={handleLogout} className="flex items-center px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"><LogOut className="w-4 h-4 mr-2" />Logout</button>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Student Info Cards */}
+        <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <InfoCard icon={User} title="Student Name" value={user.name} color="text-blue-600" />
+          <InfoCard icon={Phone} title="Email" value={user.email} color="text-yellow-600" />
+          <InfoCard icon={BusFront} title="Active Buses" value={nearbyBuses.length} color="text-indigo-600" />
+        </div>
+
+        {/* Main Map */}
+        <div className="lg:col-span-2 h-[300px] sm:h-[400px] md:h-[500px]">
+          <LiveMap userLocation={userLocation} nearbyBuses={nearbyBuses} selectedBus={selectedBus} setSelectedBus={setSelectedBus} />
+        </div>
+
+        {/* Sidebar */}
+        <div className="space-y-6">
+          {/* Closest Bus */}
+          <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-xl">
+            <h3 className="font-semibold text-lg mb-3">Closest Bus</h3>
+            {closestBus ? (
+              <div className="space-y-2">
+                <div className="flex justify-between"><span>Bus ID:</span><span className="font-semibold">{closestBus.bus.busId}</span></div>
+                <div className="flex justify-between"><span>Distance:</span><span className="font-semibold text-blue-600">{(closestBus.distance / 1000).toFixed(2)} km</span></div>
+                <div className="flex justify-between"><span>ETA:</span><span className="font-semibold">{Math.round((closestBus.distance / 1000) * 3)} min</span></div>
+                <div className="flex justify-between"><span>Status:</span><span className="font-semibold text-green-600">Live</span></div>
+              </div>
+            ) : <p className="text-gray-500 text-center py-4">No buses nearby</p>}
+          </div>
+
+          {/* Active Buses */}
+          <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-xl">
+            <h3 className="font-semibold text-lg mb-3">Active Buses ({nearbyBuses.filter(bus => bus.location).length})</h3>
+            <div className="space-y-2 max-h-60 overflow-y-auto">
+              {nearbyBuses.filter(bus => bus.location).map(bus => (
+                <div key={bus.busId} className="flex justify-between items-center p-2 sm:p-3 hover:bg-gray-50 rounded-lg cursor-pointer border border-gray-100" onClick={() => setSelectedBus(bus)}>
+                  <div>
+                    <span className="font-medium block">{bus.busId}</span>
+                    <span className="text-sm text-gray-500">{bus.driverName || "Driver"}</span>
+                  </div>
+                  <span className="text-sm text-green-600 font-semibold">Live</span>
+                </div>
+              ))}
+              {nearbyBuses.filter(bus => bus.location).length === 0 && <p className="text-gray-500 text-center py-4">No active buses in your area</p>}
+            </div>
+          </div>
+
+          {/* Notifications */}
+          <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-xl">
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="font-semibold text-lg">Notifications</h3>
+              {notifications.length > 0 && <button onClick={() => setNotifications([])} className="text-sm text-blue-600 hover:text-blue-800">Clear All</button>}
+            </div>
+            <div className="space-y-2 max-h-40 overflow-y-auto">
+              {notifications.length > 0 ? notifications.map(notif => (
+                <div key={notif.id} className="p-2 sm:p-3 rounded-lg border-l-4 bg-blue-50 border-blue-400">
+                  <div className="flex justify-between items-start">
+                    <p className="text-sm flex-1">{notif.message}</p>
+                    <button onClick={() => clearNotification(notif.id)} className="text-gray-400 hover:text-gray-600 ml-2">×</button>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">{notif.timestamp}</p>
+                </div>
+              )) : <p className="text-gray-500 text-center py-4">No notifications</p>}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default StudentMapDashboard;

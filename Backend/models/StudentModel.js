@@ -1,5 +1,5 @@
 // models/Student.js
- import mongoose from "mongoose";
+import mongoose from "mongoose";
 
 const studentSchema = new mongoose.Schema(
   {
@@ -33,6 +33,6 @@ const studentSchema = new mongoose.Schema(
 );
 
 
- const Student = mongoose.model("Student", studentSchema);
+const Student = mongoose.model("Student", studentSchema);
 
 export default Student;  // ✅ always default export
