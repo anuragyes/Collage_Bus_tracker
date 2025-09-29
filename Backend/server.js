@@ -43,35 +43,14 @@ const io = new Server(server, {
 // Store live buses and their details
 const busLocations = new Map(); // Using Map instead of object for better performance
 
-// Define bus routes
-const busRoutes = {
-  "R1": [
-    { lat: 28.7041, lng: 77.1025 },
-    { lat: 28.7100, lng: 77.1050 },
-    { lat: 28.7150, lng: 77.1100 },
-  ],
-  "R2": [
-    { lat: 28.7500, lng: 77.1500 },
-    { lat: 28.7550, lng: 77.1550 },
-    { lat: 28.7600, lng: 77.1600 },
-  ],
-  "B-001": [ // Added specific bus routes
-    { lat: 28.7041, lng: 77.1025 },
-    { lat: 28.7100, lng: 77.1050 },
-  ],
-  "BUS-001": [
-    { lat: 28.7041, lng: 77.1025 },
-    { lat: 28.7100, lng: 77.1050 },
-  ]
-};
 
 // Store connected users
 const connectedUsers = new Map();
 
-// --- SOCKET.IO EVENTS ---
+// // --- SOCKET.IO EVENTS ---
 io.on("connection", (socket) => {
   console.log(`⚡ Client connected: ${socket.id}`);
-  
+
   // Add to connected users
   connectedUsers.set(socket.id, {
     id: socket.id,
@@ -83,7 +62,7 @@ io.on("connection", (socket) => {
   socket.on("driver_login", (data) => {
     try {
       const { busId, driverName, initialLocation, route = "R1" } = data;
-      
+
       if (!busId) {
         socket.emit("error", { message: "Bus ID is required" });
         return;
@@ -101,7 +80,7 @@ io.on("connection", (socket) => {
 
       // Join route room
       socket.join(`route-${route}`);
-      
+
       // Store bus location
       busLocations.set(busId, {
         busId,
@@ -124,8 +103,8 @@ io.on("connection", (socket) => {
         timestamp: new Date().toISOString()
       });
 
-      socket.emit("ride_started", { 
-        busId, 
+      socket.emit("ride_started", {
+        busId,
         status: 'active',
         message: 'Ride started successfully'
       });
@@ -136,11 +115,13 @@ io.on("connection", (socket) => {
     }
   });
 
+
+  
   // Driver sends location updates
   socket.on("driver_location_update", (data) => {
     try {
       const { busId, latitude, longitude, route = "R1" } = data;
-      
+
       if (!busId || latitude === undefined || longitude === undefined) {
         console.error("Invalid location data:", data);
         return;
@@ -184,7 +165,7 @@ io.on("connection", (socket) => {
   socket.on("student_subscribe", (data) => {
     try {
       const { route = "R1", studentId } = data || {};
-      
+
       if (!route) {
         socket.emit("error", { message: "Route is required" });
         return;
@@ -213,7 +194,7 @@ io.on("connection", (socket) => {
           lastUpdate: bus.lastUpdate
         }));
 
-      socket.emit("initial_bus_locations", { 
+      socket.emit("initial_bus_locations", {
         activeBuses: activeBusesOnRoute,
         route
       });
@@ -230,7 +211,7 @@ io.on("connection", (socket) => {
   socket.on("driver_logout", (data) => {
     try {
       const { busId } = data || {};
-      
+
       if (!busId) {
         socket.emit("error", { message: "Bus ID is required" });
         return;
@@ -239,17 +220,17 @@ io.on("connection", (socket) => {
       const busData = busLocations.get(busId);
       if (busData) {
         const { route } = busData;
-        
+
         // Remove bus from tracking
         busLocations.delete(busId);
-        
+
         // Notify students on the route
         io.to(`route-${route}`).emit("bus_removed", { busId });
-        
+
         console.log(`🚫 Driver logged out: Bus ${busId} removed from route ${route}`);
-        
-        socket.emit("ride_ended", { 
-          busId, 
+
+        socket.emit("ride_ended", {
+          busId,
           status: 'inactive',
           message: 'Ride ended successfully'
         });
@@ -265,7 +246,7 @@ io.on("connection", (socket) => {
   socket.on("bus_nearby_alert", (data) => {
     try {
       const { busId, studentId, distance, studentLocation } = data;
-      
+
       if (busId && studentId) {
         // Notify the specific student
         socket.emit("bus_nearby", {
@@ -286,7 +267,7 @@ io.on("connection", (socket) => {
   socket.on("get_bus_status", (data) => {
     try {
       const { busId } = data || {};
-      
+
       if (busId) {
         const busData = busLocations.get(busId);
         socket.emit("bus_status", {
@@ -313,14 +294,14 @@ io.on("connection", (socket) => {
   // Disconnect handler
   socket.on("disconnect", (reason) => {
     console.log(`❌ Client disconnected: ${socket.id} - Reason: ${reason}`);
-    
+
     const userData = connectedUsers.get(socket.id);
-    
+
     // Clean up bus locations if a driver disconnects
     if (userData && userData.type === 'driver' && userData.busId) {
       const busId = userData.busId;
       const busData = busLocations.get(busId);
-      
+
       if (busData) {
         const { route } = busData;
         busLocations.delete(busId);
@@ -328,20 +309,138 @@ io.on("connection", (socket) => {
         console.log(`🚫 Bus ${busId} removed (driver disconnected)`);
       }
     }
-    
+
     // Remove from connected users
     connectedUsers.delete(socket.id);
-    
+
     console.log(`📊 Active connections: ${connectedUsers.size}, Active buses: ${busLocations.size}`);
   });
 });
 
+
+// io.on("connection", (socket) => {
+//   console.log(`⚡ Client connected: ${socket.id}`);
+
+//   connectedUsers.set(socket.id, {
+//     id: socket.id,
+//     type: 'unknown',
+//     connectedAt: new Date()
+//   });
+
+//   // --- DRIVER LOGIN ---
+//   socket.on("driver_login", (data) => {
+//     try {
+//       const { busId, driverName, driverPhone, initialLocation, route = "R1" } = data;
+
+//       if (!busId) {
+//         socket.emit("error", { message: "Bus ID is required" });
+//         return;
+//       }
+
+//       console.log(`🚗 Driver ${driverName} (${busId}) logged in`);
+
+//       // Update connected user type
+//       connectedUsers.set(socket.id, {
+//         ...connectedUsers.get(socket.id),
+//         type: 'driver',
+//         busId,
+//         driverName,
+//         driverPhone
+//       });
+
+//       // Join route room
+//       socket.join(`route-${route}`);
+
+//       // Store bus location with phone number
+//       busLocations.set(busId, {
+//         busId,
+//         driverName: driverName || "Unknown Driver",
+//         driverPhone: driverPhone || "N/A",
+//         location: initialLocation || { latitude: 28.7041, longitude: 77.1025 },
+//         active: true,
+//         timestamp: new Date(),
+//         driverSocket: socket.id,
+//         route,
+//         lastUpdate: new Date()
+//       });
+
+//       // Notify students on this route
+//       io.to(`route-${route}`).emit("bus_location_update", {
+//         busId,
+//         driverName: driverName || "Unknown Driver",
+//         driverPhone: driverPhone || "N/A",
+//         latitude: initialLocation?.latitude || 28.7041,
+//         longitude: initialLocation?.longitude || 77.1025,
+//         route,
+//         timestamp: new Date().toISOString()
+//       });
+
+//       socket.emit("ride_started", {
+//         busId,
+//         status: 'active',
+//         message: 'Ride started successfully'
+//       });
+
+//     } catch (error) {
+//       console.error("Error in driver_login:", error);
+//       socket.emit("error", { message: "Failed to start ride" });
+//     }
+//   });
+
+//   // --- DRIVER LOCATION UPDATE ---
+//   socket.on("driver_location_update", (data) => {
+//     try {
+//       const { busId, latitude, longitude, driverName, driverPhone, route = "R1" } = data;
+
+//       if (!busId || latitude === undefined || longitude === undefined) return;
+
+//       // Update bus data
+//       const busData = busLocations.get(busId) || {
+//         busId,
+//         driverName: driverName || "Unknown Driver",
+//         driverPhone: driverPhone || "N/A",
+//         route,
+//         active: true,
+//         driverSocket: socket.id
+//       };
+
+//       busLocations.set(busId, {
+//         ...busData,
+//         location: { latitude, longitude },
+//         lastUpdate: new Date(),
+//         active: true
+//       });
+
+//       // Broadcast updated bus data to students
+//       io.to(`route-${route}`).emit("bus_location_update", {
+//         busId,
+//         driverName: busData.driverName,
+//         driverPhone: busData.driverPhone,
+//         latitude,
+//         longitude,
+//         route,
+//         timestamp: new Date().toISOString()
+//       });
+
+//       console.log(`📍 Bus ${busId} location updated: ${latitude}, ${longitude}`);
+
+//     } catch (error) {
+//       console.error("Error in driver_location_update:", error);
+//     }
+//   });
+
+// });
+
+
 // --- API ROUTES ---
+
 app.use("/api/bus", router);
 app.use("/api/student", StudentRouter);
 app.use("/api/driver", DriverRouter);
 app.use("/api/driverprofile", ProfileDriver);
 app.use("/api/student/ride", StudentRide);
+
+app.use("/api/adminDriverProfile", ProfileDriver);
 
 // Get all bus routes
 app.get("/api/bus/routes", (req, res) => {
@@ -372,7 +471,7 @@ app.get("/api/bus/active", (req, res) => {
         route: bus.route,
         lastUpdate: bus.lastUpdate
       }));
-    
+
     res.json({
       success: true,
       activeBuses,
@@ -402,8 +501,8 @@ app.get("/api/status", (req, res) => {
 
 // Health check
 app.get("/health", (req, res) => {
-  res.json({ 
-    status: "OK", 
+  res.json({
+    status: "OK",
     timestamp: new Date().toISOString(),
     service: "Bus Tracker API"
   });
@@ -442,7 +541,7 @@ const startServer = async () => {
   try {
     await connectionDb();
     console.log("✅ Database connected successfully");
-    
+
     server.listen(PORT, () => {
       console.log(`✅ Server running on http://localhost:${PORT}`);
       console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);

@@ -18,7 +18,7 @@ const AccessModelStudent = new mongoose.Schema(
     },
 
     // Trip status
-    isDriving: { type: Boolean, default: false },
+    isDriving: { type: Boolean, default: false},
 
     // Optional trip history
     tripHistory: [
@@ -32,6 +32,6 @@ const AccessModelStudent = new mongoose.Schema(
   { timestamps: true }
 );
 
-const Driver = mongoose.model("Driver", AccessModelStudent);
+const DriverProfile = mongoose.model("DriverProfile", AccessModelStudent);
 
-export default Driver;
+export default DriverProfile;

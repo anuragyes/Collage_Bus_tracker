@@ -347,6 +347,8 @@ const DriverAccessProfile = () => {
             return toast.error("All fields (Email, Password, Bus Number) are required.");
         }
         setLoading(true);
+
+          
         
         try {
             const response = await axios.post(`${API_BASE_URL}${START_RIDE_ENDPOINT}`, {
@@ -354,6 +356,9 @@ const DriverAccessProfile = () => {
                 password,
                 busNumber
             }, { withCredentials: true });
+
+
+              console.log("thsi is Driver", response.data.driver)
 
             if (response.data && response.data.driver) {
                 toast.success(response.data.message || "Login successful! Redirecting to dashboard.");

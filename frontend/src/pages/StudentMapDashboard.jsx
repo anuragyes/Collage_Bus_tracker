@@ -1,14 +1,13 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import toast, { Toaster } from "react-hot-toast";
-import { User, MapPin, BusFront, Phone, Power, LogOut, Navigation } from "lucide-react";
+import { User, MapPin, BusFront, Phone, LogOut, Navigation, ClockFading } from "lucide-react";
 import { io } from "socket.io-client";
-import { GoogleMap, Marker, useLoadScript, InfoWindow } from "@react-google-maps/api";
+import { GoogleMap, Marker, InfoWindow, useLoadScript } from "@react-google-maps/api";
 import { useNavigate, useLocation } from "react-router-dom";
 
 const SOCKET_IO_URL = "http://localhost:5000";
 const GOOGLE_MAPS_API_KEY = "AIzaSyCGHZtNx-x6Z0jOJdc2s1O5e0_xA84mX5k";
-
 const socket = io(SOCKET_IO_URL, { withCredentials: true });
 
 const mapContainerStyle = {
@@ -19,10 +18,8 @@ const mapContainerStyle = {
 };
 
 const defaultCenter = { lat: 28.7041, lng: 77.1025 };
-
 const busIcon = { url: "https://maps.google.com/mapfiles/ms/icons/bus.png", scaledSize: { width: 32, height: 32 } };
 const userIcon = { url: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png", scaledSize: { width: 24, height: 24 } };
-const nearbyBusIcon = { url: "https://maps.google.com/mapfiles/ms/icons/red-dot.png", scaledSize: { width: 32, height: 32 } };
 
 const InfoCard = ({ icon: Icon, title, value, color }) => (
   <div className="bg-white p-4 rounded-xl shadow-lg border-l-4 border-l-gray-300 transition-all duration-300 hover:shadow-2xl">
@@ -48,7 +45,12 @@ const LiveMap = ({ userLocation, nearbyBuses, selectedBus, setSelectedBus }) => 
   }, [userLocation]);
 
   if (loadError) return <div className="bg-white p-6 rounded-2xl shadow-xl text-center text-red-500 py-8">Error loading Google Maps.</div>;
-  if (!isLoaded) return <div className="bg-white p-6 rounded-2xl shadow-xl text-center py-8"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div><p className="text-gray-600">Loading maps...</p></div>;
+  if (!isLoaded) return (
+    <div className="bg-white p-6 rounded-2xl shadow-xl text-center py-8">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+      <p className="text-gray-600">Loading maps...</p>
+    </div>
+  );
 
   return (
     <div className="bg-white p-2 sm:p-4 rounded-2xl shadow-xl h-full">
@@ -65,14 +67,23 @@ const LiveMap = ({ userLocation, nearbyBuses, selectedBus, setSelectedBus }) => 
       >
         {userLocation && <Marker position={{ lat: userLocation.latitude, lng: userLocation.longitude }} icon={userIcon} title="Your Location" />}
         {nearbyBuses.map(bus => bus.location && (
-          <Marker key={bus.busId} position={{ lat: bus.location.latitude, lng: bus.location.longitude }} icon={busIcon} onClick={() => setSelectedBus(bus)} title={`Bus ${bus.busId}`} />
+          <Marker
+            key={bus.busId}
+            position={{ lat: bus.location.latitude, lng: bus.location.longitude }}
+            icon={busIcon}
+            onClick={() => setSelectedBus(bus)}
+            title={`Bus ${bus.busId}`}
+          />
         ))}
         {selectedBus && selectedBus.location && (
-          <InfoWindow position={{ lat: selectedBus.location.latitude, lng: selectedBus.location.longitude }} onCloseClick={() => setSelectedBus(null)}>
+          <InfoWindow
+            position={{ lat: selectedBus.location.latitude, lng: selectedBus.location.longitude }}
+            onCloseClick={() => setSelectedBus(null)}
+          >
             <div className="p-2">
               <h3 className="font-bold text-lg">{selectedBus.busId}</h3>
-              <p className="text-sm">Driver: {selectedBus.driverName || "Unknown"}</p>
-              <p className="text-sm text-gray-600">Last update: {new Date().toLocaleTimeString()}</p>
+              <p className="text-sm">Driver: {selectedBus.driverName || "Unknown"} ({selectedBus.driverPhone || "N/A"})</p>
+              <p className="text-sm text-gray-600">Last update: {new Date(selectedBus.timestamp).toLocaleTimeString()}</p>
             </div>
           </InfoWindow>
         )}
@@ -85,13 +96,19 @@ const StudentMapDashboard = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const studentData = location.state?.studentData;
-  
-  const [user, setUser] = useState(studentData || { name: "Student Name", email: "student@school.edu", phoneNumber: "N/A", busId: "B-001" });
+      // console.log("studentdata" , studentData)
+
+  const [user, setUser] = useState(studentData);
   const [userLocation, setUserLocation] = useState(null);
   const [nearbyBuses, setNearbyBuses] = useState([]);
   const [selectedBus, setSelectedBus] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [isConnected, setIsConnected] = useState(false);
+
+
+   console.log(
+   "this sis stduent data ", studentData
+   )
 
   useEffect(() => { if (!studentData) navigate('/student-login'); }, [studentData, navigate]);
 
@@ -110,33 +127,47 @@ const StudentMapDashboard = () => {
   useEffect(() => {
     socket.on("connect", () => setIsConnected(true));
     socket.on("disconnect", () => setIsConnected(false));
-    socket.emit("student_subscribe", { studentId: user.email || "student123", location: userLocation });
-    socket.on("initial_bus_locations", (data) => setNearbyBuses(data.activeBuses || []));
-    socket.on("bus_location_update", (data) => setNearbyBuses(prev => {
-      const idx = prev.findIndex(bus => bus.busId === data.busId);
-      if (idx >= 0) { const updated = [...prev]; updated[idx] = { ...updated[idx], location: { latitude: data.latitude, longitude: data.longitude }, timestamp: data.timestamp }; return updated; }
-      else return [...prev, { busId: data.busId, driverName: data.driverName, location: { latitude: data.latitude, longitude: data.longitude }, timestamp: data.timestamp }];
-    }));
-    socket.on("bus_removed", ({ busId }) => { setNearbyBuses(prev => prev.filter(bus => bus.busId !== busId)); if (selectedBus?.busId === busId) setSelectedBus(null); });
-    socket.on("bus_nearby", (data) => { const notif = { id: Date.now(), type: 'info', message: `Bus ${data.busId} is ${(data.distance / 1000).toFixed(1)}km away!`, timestamp: new Date().toLocaleTimeString() }; setNotifications(prev => [notif, ...prev.slice(0,5)]); toast.success(`Bus ${data.busId} is approaching!`); });
-    return () => { socket.off(); };
-  }, [user.email, userLocation, selectedBus]);
 
-  useEffect(() => {
-    if (!userLocation || nearbyBuses.length === 0) return;
-    const interval = setInterval(() => {
-      nearbyBuses.forEach(bus => {
-        if (bus.location) {
-          const distance = calculateDistance(userLocation.latitude, userLocation.longitude, bus.location.latitude, bus.location.longitude);
-          if (distance <= 3000 && distance > 500) socket.emit("bus_nearby_alert", { busId: bus.busId, studentId: user.email, distance: distance, studentLocation: userLocation });
+    socket.emit("student_subscribe", { studentId: user.email || "student123", location: userLocation });
+
+    socket.on("initial_bus_locations", (data) => {
+      setNearbyBuses(data.activeBuses || []);
+    });
+
+    socket.on("bus_location_update", (data) => {
+      setNearbyBuses(prev => {
+        const idx = prev.findIndex(bus => bus.busId === data.busId);
+        const busData = {
+          busId: data.busId,
+          driverName: data.driverName || "Unknown",
+          driverPhone: data.driverPhone || "N/A",
+          location: { latitude: data.latitude, longitude: data.longitude },
+          timestamp: data.timestamp
+        };
+        if (idx >= 0) {
+          const updated = [...prev];
+          updated[idx] = busData;
+          return updated;
+        } else {
+          return [...prev, busData];
         }
       });
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [userLocation, nearbyBuses, user.email]);
+    });
+
+    socket.on("bus_removed", ({ busId }) => {
+      setNearbyBuses(prev => prev.filter(bus => bus.busId !== busId));
+      if (selectedBus?.busId === busId) setSelectedBus(null);
+    });
+
+    return () => socket.off();
+  }, [user.email, userLocation, selectedBus]);
 
   const calculateDistance = (lat1, lon1, lat2, lon2) => {
-    const R = 6371e3; const φ1 = lat1 * Math.PI / 180; const φ2 = lat2 * Math.PI / 180; const Δφ = (lat2-lat1)*Math.PI/180; const Δλ = (lon2-lon1)*Math.PI/180;
+    const R = 6371e3;
+    const φ1 = lat1 * Math.PI / 180;
+    const φ2 = lat2 * Math.PI / 180;
+    const Δφ = (lat2-lat1)*Math.PI/180;
+    const Δλ = (lon2-lon1)*Math.PI/180;
     const a = Math.sin(Δφ/2)**2 + Math.cos(φ1)*Math.cos(φ2)*Math.sin(Δλ/2)**2;
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   };
@@ -158,7 +189,7 @@ const StudentMapDashboard = () => {
   return (
     <div className="min-h-screen bg-gray-50 p-4 sm:p-6 md:p-8">
       <Toaster position="top-center" reverseOrder={false} />
-      
+
       {/* Header */}
       <div className="max-w-7xl mx-auto mb-6">
         <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
@@ -167,9 +198,15 @@ const StudentMapDashboard = () => {
             <p className="text-gray-600">Welcome back, {user.name}!</p>
           </div>
           <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
-            <div className={`px-3 py-1 rounded-full ${isConnected ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{isConnected ? 'Connected' : 'Disconnected'}</div>
-            <button onClick={refreshBuses} className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"><Navigation className="w-4 h-4 mr-2" />Refresh</button>
-            <button onClick={handleLogout} className="flex items-center px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"><LogOut className="w-4 h-4 mr-2" />Logout</button>
+            <div className={`px-3 py-1 rounded-full ${isConnected ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+              {isConnected ? 'Connected' : 'Disconnected'}
+            </div>
+            <button onClick={refreshBuses} className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+              <Navigation className="w-4 h-4 mr-2" />Refresh
+            </button>
+            <button onClick={handleLogout} className="flex items-center px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
+              <LogOut className="w-4 h-4 mr-2" />Logout
+            </button>
           </div>
         </div>
       </div>
@@ -195,9 +232,9 @@ const StudentMapDashboard = () => {
             {closestBus ? (
               <div className="space-y-2">
                 <div className="flex justify-between"><span>Bus ID:</span><span className="font-semibold">{closestBus.bus.busId}</span></div>
+                <div className="flex justify-between"><span>Driver:</span><span className="font-semibold">{closestBus.bus.driverName} ({closestBus.bus.driverPhone})</span></div>
                 <div className="flex justify-between"><span>Distance:</span><span className="font-semibold text-blue-600">{(closestBus.distance / 1000).toFixed(2)} km</span></div>
                 <div className="flex justify-between"><span>ETA:</span><span className="font-semibold">{Math.round((closestBus.distance / 1000) * 3)} min</span></div>
-                <div className="flex justify-between"><span>Status:</span><span className="font-semibold text-green-600">Live</span></div>
               </div>
             ) : <p className="text-gray-500 text-center py-4">No buses nearby</p>}
           </div>
@@ -210,7 +247,7 @@ const StudentMapDashboard = () => {
                 <div key={bus.busId} className="flex justify-between items-center p-2 sm:p-3 hover:bg-gray-50 rounded-lg cursor-pointer border border-gray-100" onClick={() => setSelectedBus(bus)}>
                   <div>
                     <span className="font-medium block">{bus.busId}</span>
-                    <span className="text-sm text-gray-500">{bus.driverName || "Driver"}</span>
+                    <span className="text-sm text-gray-500">{bus.driverName || "Driver"} ({bus.driverPhone || "N/A"})</span>
                   </div>
                   <span className="text-sm text-green-600 font-semibold">Live</span>
                 </div>

@@ -86,7 +86,7 @@ const ParentSection = ({ reverse }) => {
         <img
           src= {studentImg}
           alt="Happy student"
-          className="rounded-lg shadow-2xl w-full max-w-md object-cover"
+          className="rounded-2xl  w-full  "
         />
         {/* Optional overlay for depth */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent rounded-lg pointer-events-none"></div>

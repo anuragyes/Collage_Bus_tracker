@@ -1,5 +1,4 @@
 import React from "react";
-import image from "../assets/mybus.jpg"; // Local bus image
 import Work from "./Work";
 
 const BusComponent = () => {
@@ -16,7 +15,8 @@ const BusComponent = () => {
             Your ticket to peace <br className="hidden sm:block" /> of mind!
           </h2>
           <p className="text-gray-600 text-base sm:text-lg mb-6 animate-slideup">
-            myskoolbus is a powerful mobile app to track the current whereabouts of the bus and get
+              <span className="text-xl sm:text-xl md:text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">Finder</span>
+              is a powerful mobile app to track the current whereabouts of the bus and get
             real-time updates. Using GPS tracking, parents and school authorities can locate and
             receive instant notifications regarding the school bus trips. Friendly, easy to use, and
             enormously helpful – a companion in your pocket.
@@ -26,14 +26,16 @@ const BusComponent = () => {
           </button>
         </div>
 
-        {/* Right Section - Bus Image */}
+        {/* Right Section - Animated Bus Illustration */}
         <div className="flex-1 flex justify-center items-center mt-10 md:mt-0">
           <div className="relative w-full max-w-sm sm:max-w-md">
             <div className="absolute -top-5 -left-5 w-full h-1/2 rounded-3xl bg-gradient-to-tr from-yellow-200 to-yellow-400 opacity-30 filter blur-3xl"></div>
+            
+            {/* Example animated bus illustration (replace with your preferred animation/GIF/SVG) */}
             <img
-              src={image}
-              alt="School Bus"
-              className="w-full h-auto object-cover rounded-3xl shadow-2xl border-4 border-white animate-busfloat"
+              src="https://sethu.ac.in/wp-content/uploads/2017/01/transport.jpg" // animated style bus image
+              alt="Animated School Bus"
+              className="w-full h-auto object-contain animate-busfloat"
             />
           </div>
         </div>
