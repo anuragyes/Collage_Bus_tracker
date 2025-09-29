@@ -18,10 +18,11 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
+// CORS setup for deployed frontend
 app.use(
   cors({
-    origin: "https://collage-bus-tracker-frontend.onrender.com",
-    credentials: true,
+    origin: "https://collage-bus-tracker-frontend.onrender.com", // deployed frontend URL
+    credentials: true, // allow cookies
   })
 );
 app.use(express.json());
