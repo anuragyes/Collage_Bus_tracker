@@ -33,4 +33,4 @@ const StudentRiding = async (req, res) => {
     }
 };
 
-  export default StudentRiding
+export default StudentRiding

@@ -26,11 +26,12 @@ const StudentAccessProfile = () => {
         { email, password },
         { withCredentials: true }
       );
-        console.log("this is resposne from stduent profile " , response)
+      console.log("this is resposne from stduent profile ", response)
+       console.log("this is respose from student progile resposne emai", response.data.email)
       toast.success("Student Login Successful!");
       // Navigate to dashboard with student data
       navigate('/student-dashboard', { state: { studentData: response.data } });
-      
+
     } catch (error) {
       console.error("Login error:", error.response?.data?.message || error.message);
       toast.error(error.response?.data?.message || "Login failed. Please check your credentials.");
@@ -43,7 +44,7 @@ const StudentAccessProfile = () => {
     <div className="flex justify-center items-center min-h-screen bg-gray-100 font-sans p-4">
       <Toaster position="top-center" reverseOrder={false} />
       <div className="w-full max-w-4xl min-h-[80vh] bg-gray-50 shadow-2xl rounded-2xl flex flex-col md:flex-row overflow-hidden">
-        
+
         <div className="w-full md:w-1/3 lg:w-2/5 p-8 flex flex-col justify-center items-center text-center bg-purple-600 text-white">
           <User size={64} className="mb-6 text-white" />
           <h1 className="text-4xl font-extrabold mb-4">Student Portal</h1>
@@ -60,7 +61,7 @@ const StudentAccessProfile = () => {
             <p className="text-center text-gray-500 mb-8">
               Sign in to track your bus in real-time
             </p>
-            
+
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
@@ -76,7 +77,7 @@ const StudentAccessProfile = () => {
                   placeholder="student@school.edu"
                 />
               </div>
-              
+
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
                   Password
@@ -91,13 +92,12 @@ const StudentAccessProfile = () => {
                   placeholder="••••••••"
                 />
               </div>
-              
+
               <button
                 type="submit"
                 disabled={loading}
-                className={`w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-md text-lg font-semibold text-white transition-all duration-300 ${
-                  loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700 transform hover:scale-[1.02]'
-                }`}
+                className={`w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-md text-lg font-semibold text-white transition-all duration-300 ${loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700 transform hover:scale-[1.02]'
+                  }`}
               >
                 {loading ? (
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
