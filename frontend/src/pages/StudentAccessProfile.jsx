@@ -22,10 +22,11 @@ const StudentAccessProfile = () => {
     setLoading(true);
     try {
       const response = await axios.post(
-        `${BASE_URL}/api/student/ride/studentRide`,
-        { email, password },
-       { withCredentials: true }
-      );
+  `${BASE_URL}/api/student/ride/studentRide`,
+  { email, password },
+  { withCredentials: true } // ✅ important to send cookies
+);
+
       console.log("this is resposne from stduent profile ", response)
        console.log("this is respose from student progile resposne emai", response.data.email)
       toast.success("Student Login Successful!");
