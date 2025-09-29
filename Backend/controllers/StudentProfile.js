@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
 import { genToken } from "../config/JWTToken.js";
 import Student from "../models/StudentModel.js";
+
 const StudentRiding = async (req, res) => {
     try {
         const { email, password } = req.body;

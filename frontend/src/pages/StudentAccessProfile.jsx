@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 
 const BASE_URL = "http://localhost:5000";
 
-const StudentLogin = () => {
+const StudentAccessProfile = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -26,7 +26,7 @@ const StudentLogin = () => {
         { email, password },
         { withCredentials: true }
       );
-      
+        console.log("this is resposne from stduent profile " , response)
       toast.success("Student Login Successful!");
       // Navigate to dashboard with student data
       navigate('/student-dashboard', { state: { studentData: response.data } });
@@ -124,4 +124,4 @@ const StudentLogin = () => {
   );
 };
 
-export default StudentLogin;
+export default StudentAccessProfile;
