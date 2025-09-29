@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
 import { genToken } from "../config/JWTToken.js";
 import Student from "../models/StudentModel.js";
+
 const StudentRiding = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -19,7 +20,7 @@ const StudentRiding = async (req, res) => {
         const token = await genToken(student._id);
 
         res.cookie("token", token, {
-           httpOnly: true,
+            httpOnly: true,
             maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
             sameSite: "None",
             secure: true,
@@ -32,4 +33,4 @@ const StudentRiding = async (req, res) => {
     }
 };
 
-  export default StudentRiding
+export default StudentRiding
