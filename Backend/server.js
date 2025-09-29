@@ -22,6 +22,8 @@ app.use(
   cors({
     origin: "https://collage-bus-tracker-frontend.onrender.com", // Added multiple origins
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"]
   })
 );
 app.use(express.json());
