@@ -20,10 +20,8 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 app.use(
   cors({
-    origin: "https://collage-bus-tracker-frontend.onrender.com", // Added multiple origins
+    origin: "https://collage-bus-tracker-frontend.onrender.com",
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"]
   })
 );
 app.use(express.json());
@@ -118,7 +116,7 @@ io.on("connection", (socket) => {
   });
 
 
-  
+
   // Driver sends location updates
   socket.on("driver_location_update", (data) => {
     try {
@@ -320,119 +318,6 @@ io.on("connection", (socket) => {
 });
 
 
-// io.on("connection", (socket) => {
-//   console.log(`⚡ Client connected: ${socket.id}`);
-
-//   connectedUsers.set(socket.id, {
-//     id: socket.id,
-//     type: 'unknown',
-//     connectedAt: new Date()
-//   });
-
-//   // --- DRIVER LOGIN ---
-//   socket.on("driver_login", (data) => {
-//     try {
-//       const { busId, driverName, driverPhone, initialLocation, route = "R1" } = data;
-
-//       if (!busId) {
-//         socket.emit("error", { message: "Bus ID is required" });
-//         return;
-//       }
-
-//       console.log(`🚗 Driver ${driverName} (${busId}) logged in`);
-
-//       // Update connected user type
-//       connectedUsers.set(socket.id, {
-//         ...connectedUsers.get(socket.id),
-//         type: 'driver',
-//         busId,
-//         driverName,
-//         driverPhone
-//       });
-
-//       // Join route room
-//       socket.join(`route-${route}`);
-
-//       // Store bus location with phone number
-//       busLocations.set(busId, {
-//         busId,
-//         driverName: driverName || "Unknown Driver",
-//         driverPhone: driverPhone || "N/A",
-//         location: initialLocation || { latitude: 28.7041, longitude: 77.1025 },
-//         active: true,
-//         timestamp: new Date(),
-//         driverSocket: socket.id,
-//         route,
-//         lastUpdate: new Date()
-//       });
-
-//       // Notify students on this route
-//       io.to(`route-${route}`).emit("bus_location_update", {
-//         busId,
-//         driverName: driverName || "Unknown Driver",
-//         driverPhone: driverPhone || "N/A",
-//         latitude: initialLocation?.latitude || 28.7041,
-//         longitude: initialLocation?.longitude || 77.1025,
-//         route,
-//         timestamp: new Date().toISOString()
-//       });
-
-//       socket.emit("ride_started", {
-//         busId,
-//         status: 'active',
-//         message: 'Ride started successfully'
-//       });
-
-//     } catch (error) {
-//       console.error("Error in driver_login:", error);
-//       socket.emit("error", { message: "Failed to start ride" });
-//     }
-//   });
-
-//   // --- DRIVER LOCATION UPDATE ---
-//   socket.on("driver_location_update", (data) => {
-//     try {
-//       const { busId, latitude, longitude, driverName, driverPhone, route = "R1" } = data;
-
-//       if (!busId || latitude === undefined || longitude === undefined) return;
-
-//       // Update bus data
-//       const busData = busLocations.get(busId) || {
-//         busId,
-//         driverName: driverName || "Unknown Driver",
-//         driverPhone: driverPhone || "N/A",
-//         route,
-//         active: true,
-//         driverSocket: socket.id
-//       };
-
-//       busLocations.set(busId, {
-//         ...busData,
-//         location: { latitude, longitude },
-//         lastUpdate: new Date(),
-//         active: true
-//       });
-
-//       // Broadcast updated bus data to students
-//       io.to(`route-${route}`).emit("bus_location_update", {
-//         busId,
-//         driverName: busData.driverName,
-//         driverPhone: busData.driverPhone,
-//         latitude,
-//         longitude,
-//         route,
-//         timestamp: new Date().toISOString()
-//       });
-
-//       console.log(`📍 Bus ${busId} location updated: ${latitude}, ${longitude}`);
-
-//     } catch (error) {
-//       console.error("Error in driver_location_update:", error);
-//     }
-//   });
-
-// });
-
 
 // --- API ROUTES ---
 
@@ -546,8 +431,6 @@ const startServer = async () => {
 
     server.listen(PORT, () => {
       console.log(`✅ Server running on http://localhost:${PORT}`);
-      console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-      console.log(`🔗 CORS enabled for: http://localhost:5173, http://localhost:3000`);
     });
   } catch (err) {
     console.error("❌ Failed to start server:", err);
