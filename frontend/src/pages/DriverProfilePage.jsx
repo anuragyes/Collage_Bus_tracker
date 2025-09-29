@@ -10,7 +10,7 @@ const DriverProfilePage = () => {
   const { currentDriver } = useContext(AuthContext);
   const [isTracking, setIsTracking] = useState(false);
   const [watchId, setWatchId] = useState(null);
-  const BASE_URL = "http://localhost:5000";
+  const BASE_URL = "https://collage-bus-tracker-backend.onrender.com";
 
   // Check if a driver is logged in; if not, redirect.
   if (!currentDriver) {

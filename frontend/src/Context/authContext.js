@@ -6,7 +6,7 @@ import { io } from "socket.io-client";
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const BASE_URL = "http://localhost:5000";
+  const BASE_URL = "https://collage-bus-tracker-backend.onrender.com";
   const [currentStudent, setCurrentStudent] = useState(null);
   const [currentDriver, setCurrentDriver] = useState(null);
   const [driverLocations, setDriverLocations] = useState([]); // For students
