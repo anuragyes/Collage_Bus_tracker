@@ -26,6 +26,8 @@ const StudentLogin = () => {
         { email, password },
         { withCredentials: true }
       );
+
+        console.log("this is the respose from stduent profile", response);
       
       toast.success("Student Login Successful!");
       // Navigate to dashboard with student data
