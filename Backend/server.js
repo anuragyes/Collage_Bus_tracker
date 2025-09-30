@@ -22,7 +22,7 @@ const PORT = process.env.PORT || 5000;
 // CORS setup for deployed frontend
 app.use(
   cors({
-    origin: "https://collage-bus-tracker-backend.onrender.com",
+    origin: "https://collage-bus-tracker-frontend.onrender.com",
     credentials: true,
   })
 );
@@ -34,7 +34,7 @@ app.use(express.urlencoded({ extended: true }));
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "https://collage-bus-tracker-backend.onrender.com",
+    origin: "https://collage-bus-tracker-frontend.onrender.com",
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   },
