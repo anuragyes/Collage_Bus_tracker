@@ -2,7 +2,6 @@ import React from 'react'
 import Register from './pages/Register'
 import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom'
 import NavbarContent from './pages/NavbarContent'
-import DriverProfilePage from './pages/DriverProfilePage'
 import BusMap from './pages/BusMap'
 import StudentMapDashboard from './pages/StudentMapDashboard'
 import StudentAccessPage from './pages/StudentAccessProfile'
@@ -35,10 +34,10 @@ const Layout = () => {
         <Route path="/studentaccess" element={<StudentAccessPage />} />
         <Route path="/driveraccess" element={<DriverAccessPage />} />
         <Route path="/Testimonials" element={<TestimonialGrid />} />
-        <Route path="/Footer" element={<Footer/>} />
+        {/* <Route path="/Footer" element={<Footer/>} /> */}
       </Routes>
 
-      
+      <Footer/>
     </>
   );
 };

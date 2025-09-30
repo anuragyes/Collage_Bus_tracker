@@ -1,4 +1,5 @@
 
+
 import React, { createContext, useState, useEffect } from "react";
 import axios from "axios";
 import { io } from "socket.io-client";
@@ -6,24 +7,24 @@ import { io } from "socket.io-client";
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const BASE_URL = "https://collage-bus-tracker-backend.onrender.com";
-  const [currentStudent, setCurrentStudent] = useState(null);
+  const BASE_URL = "http://localhost:5000"; // use production URL
+  const [currentuser, setCurrentuser] = useState(null);
   const [currentDriver, setCurrentDriver] = useState(null);
-  const [driverLocations, setDriverLocations] = useState([]); // For students
+  const [driverLocations, setDriverLocations] = useState([]);
   const [socket, setSocket] = useState(null);
+  const [loading, setLoading] = useState(true); // useful for initial load
 
-  const isLoggedInStudent = !!currentStudent;
+  const isLoggedInStudent = !!currentuser;
   const isLoggedInDriver = !!currentDriver;
 
-  // Initialize socket connection once
+  // ---------------- SOCKET ----------------
   useEffect(() => {
     const newSocket = io(BASE_URL, { withCredentials: true });
     setSocket(newSocket);
 
-    // Listen to all driver location updates (for students)
     newSocket.on("update-location", (data) => {
       setDriverLocations((prev) => {
-        // Update or add driver location
+        //  console.log("this is context" , setDriverLocations)
         const exists = prev.find((d) => d.driverId === data.driverId);
         if (exists) {
           return prev.map((d) => (d.driverId === data.driverId ? data : d));
@@ -36,13 +37,28 @@ export const AuthProvider = ({ children }) => {
     return () => newSocket.disconnect();
   }, []);
 
+  // ---------------- SESSION RESTORE ----------------
+  useEffect(() => {
+    const restoreUser = async () => {
+      try {
+        const res = await axios.get(`${BASE_URL}/api/authclient/me`, { withCredentials: true });
+        setCurrentuser(res.data.clientData); // backend should return clientData
+      } catch (err) {
+        setCurrentuser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    restoreUser();
+  }, []);
+
   // ---------------- STUDENT AUTH ----------------
-  const studentSignup = async (formData) => {
+  const AuthSignup = async (formData) => {
     try {
-      const res = await axios.post(`${BASE_URL}/api/student/signup`, formData, {
+      const res = await axios.post(`${BASE_URL}/api/authclient/signup`, formData, {
         withCredentials: true,
       });
-      setCurrentStudent(res.data.user || res.data);
+      setCurrentuser(res.data.client || res.data);
       return res.data;
     } catch (error) {
       console.error("Student signup error:", error.response?.data || error.message);
@@ -50,12 +66,14 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const studentLogin = async (formData) => {
+  const AuthLogin = async (formData) => {
     try {
-      const res = await axios.post(`${BASE_URL}/api/student/login`, formData, {
+      const res = await axios.post(`${BASE_URL}/api/authclient/login`, formData, {
         withCredentials: true,
       });
-      setCurrentStudent(res.data.user || res.data);
+      setCurrentuser(res.data.client || res.data);
+
+       console.log("thisnis res data by user " , res);
       return res.data;
     } catch (error) {
       console.error("Student login error:", error.response?.data || error.message);
@@ -63,10 +81,10 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const studentLogout = async () => {
+  const AuthLogout = async () => {
     try {
-      await axios.get(`${BASE_URL}/api/student/logout`, { withCredentials: true });
-      setCurrentStudent(null);
+      await axios.post(`${BASE_URL}/api/authclient/logout`, {}, { withCredentials: true });
+      setCurrentuser(null);
     } catch (error) {
       console.error("Student logout error:", error.response?.data || error.message);
     }
@@ -75,9 +93,7 @@ export const AuthProvider = ({ children }) => {
   // ---------------- DRIVER AUTH ----------------
   const driverSignup = async (formData) => {
     try {
-      const res = await axios.post(`${BASE_URL}/api/driver/signup`, formData, {
-        withCredentials: true,
-      });
+      const res = await axios.post(`${BASE_URL}/api/driver/signup`, formData, { withCredentials: true });
       setCurrentDriver(res.data.user || res.data);
       return res.data;
     } catch (error) {
@@ -88,9 +104,7 @@ export const AuthProvider = ({ children }) => {
 
   const driverLogin = async (formData) => {
     try {
-      const res = await axios.post(`${BASE_URL}/api/driver/login`, formData, {
-        withCredentials: true,
-      });
+      const res = await axios.post(`${BASE_URL}/api/driver/login`, formData, { withCredentials: true });
       setCurrentDriver(res.data.user || res.data);
       return res.data;
     } catch (error) {
@@ -101,7 +115,7 @@ export const AuthProvider = ({ children }) => {
 
   const driverLogout = async () => {
     try {
-      await axios.get(`${BASE_URL}/api/driver/logout`, { withCredentials: true });
+      await axios.post(`${BASE_URL}/api/driver/logout`, {}, { withCredentials: true });
       setCurrentDriver(null);
     } catch (error) {
       console.error("Driver logout error:", error.response?.data || error.message);
@@ -109,9 +123,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   // ---------------- SOCKET FUNCTIONS ----------------
-  // Send driver location
   const sendDriverLocation = (lat, lng) => {
     if (socket && currentDriver) {
+      // console.log("current driver" , currentDriver)
       socket.emit("driver-location", {
         driverId: currentDriver._id,
         lat,
@@ -120,30 +134,30 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Get all driver locations (for students)
-  const getDriverLocations = () => {
-    return driverLocations;
-  };
+  const getDriverLocations = () => driverLocations;
 
   return React.createElement(
     AuthContext.Provider,
     {
-      value: {
+      value:{
+        currentuser,
         isLoggedInStudent,
-        currentStudent,
-        studentSignup,
-        studentLogin,
-        studentLogout,
-        isLoggedInDriver,
+        AuthSignup,
+        AuthLogin,
+        AuthLogout,
         currentDriver,
+        isLoggedInDriver,
         driverSignup,
         driverLogin,
         driverLogout,
-        sendDriverLocation,  // For drivers
-        getDriverLocations,  // For students
-        driverLocations,     // reactive state if needed
-      },
+        sendDriverLocation,
+        getDriverLocations,
+        driverLocations,
+        loading,
+      }
     },
+
     children
+
   );
 };

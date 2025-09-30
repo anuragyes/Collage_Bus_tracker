@@ -4,9 +4,10 @@ import { useLocation, useNavigate } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
 import { User, MapPin, BusFront, Phone, Power, Check, X, LogOut } from "lucide-react"; 
 import { io } from "socket.io-client";
+import { FaBus } from "react-icons/fa";
 import { GoogleMap, Marker, useLoadScript } from "@react-google-maps/api";
 
-const SOCKET_IO_URL = "https://collage-bus-tracker-backend.onrender.com";
+const SOCKET_IO_URL = "http://localhost:5000";
 const GOOGLE_MAPS_API_KEY = "AIzaSyCGHZtNx-x6Z0jOJdc2s1O5e0_xA84mX5k";
 
 const socket = io(SOCKET_IO_URL, { withCredentials: true });
@@ -69,6 +70,9 @@ const LiveMap = ({ busId, isDriving, currentLocation, setCurrentLocation }) => {
     const { isLoaded, loadError } = useLoadScript({
         googleMapsApiKey: GOOGLE_MAPS_API_KEY,
     });
+
+
+    //   console.log("this is nus id" , busId)
     const watchId = useRef(null);
     const mapRef = useRef(null);
     const markerRef = useRef(null);
@@ -80,10 +84,12 @@ const LiveMap = ({ busId, isDriving, currentLocation, setCurrentLocation }) => {
         boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)"
     };
 
+
+
     const defaultCenter = { lat: 28.7041, lng: 77.1025 };
 
     const driverBusIcon = {
-        url: 'https://cdn-icons-png.flaticon.com/512/3233/3233830.png',
+        url: <FaBus />,
         scaledSize: { width: 48, height: 48 }
     };
 

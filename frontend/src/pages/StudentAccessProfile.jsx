@@ -6,7 +6,7 @@ import { LogIn, User } from "lucide-react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-const BASE_URL = "http://localhost:5000";
+ const BASE_URL = "http://localhost:5000";
 
 const StudentAccessProfile = () => {
   const [email, setEmail] = useState("");
@@ -124,4 +124,4 @@ const StudentAccessProfile = () => {
   );
 };
 
-export default StudentAccessProfile;
+export default  StudentAccessProfile;

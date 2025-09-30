@@ -6,7 +6,7 @@ import { io } from "socket.io-client";
 import { GoogleMap, Marker, InfoWindow, useLoadScript } from "@react-google-maps/api";
 import { useNavigate, useLocation } from "react-router-dom";
 
-const SOCKET_IO_URL = "https://collage-bus-tracker-backend.onrender.com";
+const SOCKET_IO_URL = "http://localhost:5000";
 const GOOGLE_MAPS_API_KEY = "AIzaSyCGHZtNx-x6Z0jOJdc2s1O5e0_xA84mX5k";
 const socket = io(SOCKET_IO_URL, { withCredentials: true });
 
@@ -38,6 +38,7 @@ const LiveMap = ({ userLocation, nearbyBuses, selectedBus, setSelectedBus }) => 
   const mapRef = useRef(null);
   const onMapLoad = (map) => { mapRef.current = map; };
 
+  
   useEffect(() => {
     if (mapRef.current && userLocation) {
       mapRef.current.panTo({ lat: userLocation.latitude, lng: userLocation.longitude });
@@ -106,9 +107,7 @@ const StudentMapDashboard = () => {
   const [isConnected, setIsConnected] = useState(false);
 
 
-   console.log(
-   "this sis stduent data ", studentData
-   )
+
 
   useEffect(() => { if (!studentData) navigate('/student-login'); }, [studentData, navigate]);
 
@@ -133,13 +132,14 @@ const StudentMapDashboard = () => {
     socket.on("initial_bus_locations", (data) => {
       setNearbyBuses(data.activeBuses || []);
     });
-
+  
     socket.on("bus_location_update", (data) => {
       setNearbyBuses(prev => {
+         
         const idx = prev.findIndex(bus => bus.busId === data.busId);
         const busData = {
           busId: data.busId,
-          driverName: data.driverName || "Unknown",
+          driverName: data.driverName || "",
           driverPhone: data.driverPhone || "N/A",
           location: { latitude: data.latitude, longitude: data.longitude },
           timestamp: data.timestamp
@@ -172,6 +172,8 @@ const StudentMapDashboard = () => {
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   };
 
+
+    // console.log("tis is neaby bus" , nearbyBuses)
   const getClosestBus = () => {
     if (!userLocation || nearbyBuses.length === 0) return null;
     return nearbyBuses.reduce((closest, bus) => {
@@ -179,9 +181,13 @@ const StudentMapDashboard = () => {
       const distance = calculateDistance(userLocation.latitude, userLocation.longitude, bus.location.latitude, bus.location.longitude);
       return !closest || distance < closest.distance ? { bus, distance } : closest;
     }, null);
+      
   };
 
+
+
   const closestBus = getClosestBus();
+  // console.log("this is closestbu" , closestBus)
   const handleLogout = () => { socket.disconnect(); navigate('/'); toast.success("Logged out successfully!"); };
   const clearNotification = (id) => setNotifications(prev => prev.filter(notif => notif.id !== id));
   const refreshBuses = () => { socket.emit("student_subscribe", { studentId: user.email || "student123", location: userLocation }); toast.success("Refreshing bus locations..."); };
