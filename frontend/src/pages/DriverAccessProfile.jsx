@@ -7,7 +7,7 @@ import toast, { Toaster } from "react-hot-toast";
 import { LogIn, BusFront, Power } from "lucide-react"; 
 import axios from "axios";
 
-const API_BASE_URL = "http://localhost:5000";
+const API_BASE_URL = "https://collage-bus-tracker-backend.onrender.com";
 const START_RIDE_ENDPOINT = "/api/driverprofile/riding/driver";
 
 const DriverAccessProfile = () => {
