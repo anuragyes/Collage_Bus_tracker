@@ -1,26 +1,23 @@
 import mongoose from "mongoose";
 
-const AccessModelStudent = new mongoose.Schema(
+const DriverSchema = new mongoose.Schema(
   {
-    // Existing authentication fields from the first schema
     name: { type: String, required: true, trim: true },
     email: { type: String, required: true, unique: true, lowercase: true },
     password: { type: String, required: true, minlength: 6 },
-
-    // Additional fields from your profile schema
-    phoneNumber: { type: String, required: false, unique: true, sparse: true },
+    phoneNumber: { type: String, required: true, unique: true, sparse: true },
     busNumber: { type: String, required: false, unique: true, sparse: true },
 
-    // Live location tracking
+    // Assigned bus reference (optional)
+    assignedBus: { type: mongoose.Schema.Types.ObjectId, ref: "Bus", default: null },
+
     location: {
       lat: { type: Number, default: 0 },
       lng: { type: Number, default: 0 },
     },
 
-    // Trip status
-    isDriving: { type: Boolean, default: false},
+    isDriving: { type: Boolean, default: false },
 
-    // Optional trip history
     tripHistory: [
       {
         startTime: Date,
@@ -32,6 +29,5 @@ const AccessModelStudent = new mongoose.Schema(
   { timestamps: true }
 );
 
-const DriverProfile = mongoose.model("DriverProfile", AccessModelStudent);
-
+const DriverProfile = mongoose.model("DriverProfile", DriverSchema);
 export default DriverProfile;

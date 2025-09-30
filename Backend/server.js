@@ -12,6 +12,7 @@ import { StudentRide } from "./routes/StudentRide.js";
 import { AuthRouter } from "./routes/AuthClient.js";
 // import DriverProfile from "./models/DriverProfile.js"; // make sure this import exists
 import DriverProfile from "./models/AccessDriver.js";
+import Driverrouter from "./routes/DriverProfile.js";
 
 dotenv.config();
 
@@ -244,8 +245,9 @@ io.on("connection", (socket) => {
 // --- API ROUTES ---
 app.use("/api/authclient", AuthRouter)
 app.use("/api/bus", router);
-app.use("/api/driverprofile", ProfileDriver);
-app.use("/api/student/ride", StudentRide);
+
+app.use("/api/student", StudentRide);
+app.use('/api/driverprofile',Driverrouter)
 
 
 app.use("/api/adminDriverProfile", ProfileDriver);

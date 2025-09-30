@@ -223,12 +223,36 @@ const Bus = () => {
         }
     };
 
-    const handleLogout = () => {
-        if (user?.isDriving) socket.emit("driver_logout", { busId: user.busNumber });
+    // const handleLogout = () => {
+    //     if (user?.isDriving) socket.emit("driver_logout", { busId: user.busNumber });
+    //     socket.disconnect();
+    //     toast.success("Logged out successfully!");
+    //     navigate("/");
+    // };
+
+    const handleLogout = async () => {
+    try {
+        if (user?.isDriving) {
+            socket.emit("driver_logout", { busId: user.busNumber });
+        }
+
+          console.log("this is user" , user);
+
+        // Call backend to update DB
+        await fetch("http://localhost:5000/api/driverprofile/driver/logout", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ busNumber: user.busNumber })
+        });
+
         socket.disconnect();
         toast.success("Logged out successfully!");
         navigate("/");
-    };
+    } catch (error) {
+        console.error("Logout failed:", error);
+        toast.error("Failed to logout. Try again.");
+    }
+};
 
     if (!location.state?.user) return null;
 
