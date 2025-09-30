@@ -18,12 +18,25 @@ export const StudentLogIn = async (req, res) => {
             return res.status(400).json({ message: "Student not Found" });
         }
 
-        // compare passwords
+        // Compare password
         const isMatch = await bcrypt.compare(password, student.password);
         if (!isMatch) {
             return res.status(400).json({ message: "Password Incorrect" });
         }
 
+        // Check subscription (1 year from createdAt)
+        const now = new Date();
+        const subscriptionStart = new Date(student.createdAt); // subscription start date
+        const subscriptionEnd = new Date(subscriptionStart);
+        subscriptionEnd.setFullYear(subscriptionEnd.getFullYear() + 1); // +1 year
+
+        if (!student.subscription || now > subscriptionEnd) {
+            student.subscription = false; // subscription expired
+            await student.save();
+            return res.status(403).json({ message: "Subscription expired. Please renew." });
+        }
+
+        // Generate token
         const token = await genToken(student._id);
 
         res.cookie("token", token, {
@@ -39,6 +52,7 @@ export const StudentLogIn = async (req, res) => {
         res.status(500).json({ message: "Student Login error" });
     }
 };
+
 
 export const StudentLogout = async (req, res) => {
     try {
