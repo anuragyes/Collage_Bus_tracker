@@ -10,24 +10,23 @@ const NavbarContent = () => {
   const { currentStudent, currentDriver } = useContext(AuthContext);
 
   const handleStudent = () => {
-    if (currentStudent) {
-      navigate("/studentaccess");
-    } else {
-      toast.error("Please log in as a Student to track the bus.");
-    }
+    console.log("clicked")
+
+    navigate("/studentaccess");
+    toast.success("Welcome to the Student portal page!");
+
   };
 
   const handleDriver = () => {
-    if (currentDriver) {
-      navigate("/driveraccess");
-    } else {
-      toast.error("Please log in as a Bus Driver to set the tracker.");
-    }
+
+    navigate("/driveraccess");
+    toast.success("Welcome to the page Driver Portal!");
+
   };
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-purple-50 font-sans">
+      <div className=" min-h-screen bg-gradient-to-br from-gray-50 to-purple-50 font-sans">
         <Navbar />
 
         {/* Hero Section */}

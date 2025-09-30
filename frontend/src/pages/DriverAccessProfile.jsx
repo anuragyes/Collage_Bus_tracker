@@ -52,7 +52,7 @@ const DriverAccessProfile = () => {
     };
 
     return (
-        <div className="flex justify-center items-center min-h-screen bg-gray-100 font-sans p-4">
+        <div className="  p-20 flex justify-center items-center min-h-screen bg-gray-100 font-sans ">
             <Toaster position="top-center" reverseOrder={false} />
             <div className="w-full max-w-6xl min-h-[90vh] bg-gray-50 shadow-2xl rounded-2xl flex flex-col md:flex-row overflow-hidden">
                 <div className="w-full md:w-1/3 lg:w-1/4 p-6 flex flex-col justify-center items-center text-center bg-gray-700 text-white">

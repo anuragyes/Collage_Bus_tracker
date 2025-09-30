@@ -7,7 +7,6 @@ import StudentMapDashboard from './pages/StudentMapDashboard'
 import StudentAccessPage from './pages/StudentAccessProfile'
 import DriverAccessPage from './pages/DriverAccessProfile'
 import TestimonialGrid from './pages/TestimonialGrid'
-import Footer from './pages/Footer'
 import BusComponent from './pages/Buscomponent'
 import { Navbar } from './pages/Navbar'
 import Work from './pages/Work'
@@ -17,7 +16,7 @@ const Layout = () => {
   const location = useLocation();
 
   // Hide Navbar on these pages
-  const hideNavbarPaths = ['/student-dashboard', '/dashboard' , '/Footer'];
+  const hideNavbarPaths = ['/student-dashboard', '/dashboard' , '/Footer'  , "/register"];
 
   return (
     <>
@@ -34,10 +33,8 @@ const Layout = () => {
         <Route path="/studentaccess" element={<StudentAccessPage />} />
         <Route path="/driveraccess" element={<DriverAccessPage />} />
         <Route path="/Testimonials" element={<TestimonialGrid />} />
-        {/* <Route path="/Footer" element={<Footer/>} /> */}
+       
       </Routes>
-
-      <Footer/>
     </>
   );
 };
