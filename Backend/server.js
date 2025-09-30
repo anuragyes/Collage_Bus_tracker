@@ -19,6 +19,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
+// CORS setup for deployed frontend
 app.use(
   cors({
     origin: "http://localhost:5173",

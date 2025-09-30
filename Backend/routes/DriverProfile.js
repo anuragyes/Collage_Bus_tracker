@@ -6,7 +6,7 @@ import { adminAddMultipleDrivers, adminDriver, startDriverRide } from "../contro
 
 
 const ProfileDriver = express.Router();
-ProfileDriver.post("/riding/driver" , isAuth ,  startDriverRide)
+ProfileDriver.post("/riding/driver"  ,  startDriverRide)
 ProfileDriver.post("/AdminDriver", isAuth , adminDriver);
 ProfileDriver.post("/multipleProfile" , isAuth , adminAddMultipleDrivers)
 

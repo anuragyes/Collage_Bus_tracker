@@ -7,7 +7,7 @@ import StudentRiding from '../controllers/StudentProfile.js';
 export const StudentRide = express.Router();
 
 
-StudentRide.post("/studentRide", StudentRiding);
+StudentRide.post("/studentRide", isAuth,  StudentRiding);
 
 
 
