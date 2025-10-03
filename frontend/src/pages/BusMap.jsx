@@ -7,7 +7,7 @@ import { io } from "socket.io-client";
 import { FaBus } from "react-icons/fa";
 import { GoogleMap, Marker, useLoadScript } from "@react-google-maps/api";
 
-const SOCKET_IO_URL = "http://localhost:5000";
+const SOCKET_IO_URL = "https://collage-bus-tracker-backend.onrender.com";
 const GOOGLE_MAPS_API_KEY = "AIzaSyCGHZtNx-x6Z0jOJdc2s1O5e0_xA84mX5k";
 
 const socket = io(SOCKET_IO_URL, { withCredentials: true });
