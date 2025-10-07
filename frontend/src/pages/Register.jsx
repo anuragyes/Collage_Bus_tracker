@@ -2,7 +2,7 @@
 
 
 import React, { useState, useContext } from "react";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { LogIn, UserPlus, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../Context/authContext.js";
@@ -41,7 +41,7 @@ const Register = () => {
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 font-sans p-4">
-      <Toaster position="top-center" reverseOrder={false} />
+      
       <div className="w-full max-w-4xl min-h-[80vh] bg-gray-50 shadow-2xl rounded-2xl flex flex-col md:flex-row overflow-hidden">
 
         {/* Left Section */}
