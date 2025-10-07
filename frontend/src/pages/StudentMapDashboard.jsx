@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from "react";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { User, MapPin, BusFront, Phone, LogOut, Navigation, ClockFading } from "lucide-react";
 import { io } from "socket.io-client";
 import { GoogleMap, Marker, InfoWindow, useLoadScript } from "@react-google-maps/api";
@@ -194,7 +194,7 @@ const StudentMapDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 sm:p-6 md:p-8">
-      <Toaster position="top-center" reverseOrder={false} />
+      
 
       {/* Header */}
       <div className="max-w-7xl mx-auto mb-6">
