@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { User, MapPin, BusFront, Phone, Power, Check, X, LogOut } from "lucide-react"; 
 import { io } from "socket.io-client";
 import { FaBus } from "react-icons/fa";
@@ -239,7 +239,7 @@ const Bus = () => {
           console.log("this is user" , user);
 
         // Call backend to update DB
-        await fetch("http://localhost:5000/api/driverprofile/driver/logout", {
+        await fetch("https://collage-bus-tracker-backend.onrender.com/api/driverprofile/driver/logout", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ busNumber: user.busNumber })
@@ -258,7 +258,7 @@ const Bus = () => {
 
     return (
         <div className="min-h-screen bg-gray-100 font-sans p-4">
-            <Toaster position="top-center" reverseOrder={false} />
+          
             <div className="w-full max-w-6xl mx-auto bg-gray-50 shadow-2xl rounded-2xl p-8">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                     <h1 className="text-3xl font-bold text-gray-900 border-b pb-2 w-full md:w-auto">
