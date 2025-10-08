@@ -3,7 +3,7 @@
 import React, { createContext, useState, useEffect } from "react";
 import axios from "axios";
 import { io } from "socket.io-client";
-
+//  step first to craete context 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -59,6 +59,7 @@ export const AuthProvider = ({ children }) => {
         withCredentials: true,
       });
       setCurrentuser(res.data.client || res.data);
+       console.log("this is the signup page " , res);
       return res.data;
     } catch (error) {
       console.error("Student signup error:", error.response?.data || error.message);
@@ -72,6 +73,7 @@ export const AuthProvider = ({ children }) => {
         withCredentials: true,
       });
       setCurrentuser(res.data.client || res.data);
+       console.log("this is login data " , res);
 
        console.log("thisnis res data by user " , res);
       return res.data;

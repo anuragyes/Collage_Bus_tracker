@@ -28,7 +28,7 @@ const ParentSection = ({ reverse }) => {
               Benefits <br /> For Parents
             </h2>
             <p className="text-gray-600 mb-6">
-              myskoolbus app keeps all the concerned parties in the loop and saves
+              Finder us app keeps all the concerned parties in the loop and saves
               everyone trouble. The benefits of the app are multifold:
             </p>
             <ul className="space-y-3 text-gray-700">
@@ -61,7 +61,7 @@ const ParentSection = ({ reverse }) => {
         Benefits <br /> For Students
       </h2>
       <p className="text-gray-600 mb-6">
-        mySkoolBus app keeps students informed and ensures a safer, smoother travel experience. Key benefits include:
+        Finder us app keeps students informed and ensures a safer, smoother travel experience. Key benefits include:
       </p>
       <ul className="space-y-3 text-gray-700">
         {[

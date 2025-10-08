@@ -87,10 +87,10 @@ const Footer = () => {
                             <p>Monday-Friday: .......... 8AM-5PM (IST)</p>
                         </li>
                         <li>
-                            <p>Phone: ............. +91816160802071</p>
+                            <p>Phone: ............. +919301409957</p>
                         </li>
                         <li>
-                            <p>Email: ............. cs@tnowindia.in</p>
+                            <p>Email: ............. anuragpandey2202@gmail.com</p>
                         </li>
                     </ul>
                 </div>

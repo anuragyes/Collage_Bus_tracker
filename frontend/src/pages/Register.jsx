@@ -1,15 +1,11 @@
-
-
-
 import React, { useState, useContext } from "react";
-import toast, { Toaster } from "react-hot-toast";
+import  toast   from "react-hot-toast";
 import { LogIn, UserPlus, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../Context/authContext.js";
 
 const Register = () => {
-
-  const { AuthLogin, AuthLogout, AuthSignup } = useContext(AuthContext)
+  const { AuthLogin, AuthSignup } = useContext(AuthContext);
   const [isSignup, setIsSignup] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -17,31 +13,35 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!email || !password || (isSignup && !name)) {
-      return toast.error("Please fill all required fields.");
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (!email || !password || (isSignup && !name)) {
+    return toast.error("Please fill all required fields.");
+  }
+
+  setLoading(true);
+  try {
+    if (isSignup) {
+      await AuthSignup({ name, email, password });
+      toast.success("Account created successfully! 🎉");
+    } else {
+      await AuthLogin({ email, password });
+      toast.success("Login successful! 🎉");
     }
-    setLoading(true);
-    try {
-      if (isSignup) {
-        await AuthSignup, ({ name, email, password });
-        toast.success("Account created successfully! 🎉");
-      } else {
-        await AuthLogin({ email, password });
-        toast.success("Login successful! 🎉");
-      }
-      navigate("/");
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Authentication failed.");
-    } finally {
-      setLoading(false);
-    }
-  };
+
+    // Navigate only after successful auth
+    navigate("/");
+  } catch (error) {
+    toast.error(error.response?.data?.message || "Authentication failed.");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 font-sans p-4">
-      <Toaster position="top-center" reverseOrder={false} />
+     
       <div className="w-full max-w-4xl min-h-[80vh] bg-gray-50 shadow-2xl rounded-2xl flex flex-col md:flex-row overflow-hidden">
 
         {/* Left Section */}
@@ -114,10 +114,11 @@ const Register = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className={`w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-md text-lg font-semibold text-white transition-all duration-300 ${loading
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-purple-600 hover:bg-purple-700 transform hover:scale-[1.02]"
-                  }`}
+                className={`w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-md text-lg font-semibold text-white transition-all duration-300 ${
+                  loading
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-purple-600 hover:bg-purple-700 transform hover:scale-[1.02]"
+                }`}
               >
                 {loading ? (
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>

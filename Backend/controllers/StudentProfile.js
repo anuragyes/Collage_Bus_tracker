@@ -46,6 +46,66 @@ export const StudentSignUp = async (req, res) => {
   }
 };
 
+
+
+// =================== MULTIPLE STUDENT SIGNUP ===================
+export const StudentsSignUpBulk = async (req, res) => {
+  try {
+    const studentsData = req.body.students; // expect array: [{name, email, password}, ...]
+
+    if (!Array.isArray(studentsData) || studentsData.length === 0) {
+      return res.status(400).json({ message: "No student data provided" });
+    }
+
+    const createdStudents = [];
+
+    for (const student of studentsData) {
+      const { name, email, password } = student;
+
+      // Check if already exists
+      const existingStudent = await Student.findOne({ email });
+      if (existingStudent) {
+        continue; // skip existing
+      }
+
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      const newStudent = await Student.create({
+        name,
+        email,
+        password: hashedPassword,
+        subscription: true, // active by default
+      });
+
+      const token = await genToken(newStudent._id);
+
+      // Optionally, set a cookie per student (or skip for bulk)
+      // res.cookie("token", token, { httpOnly: true, maxAge: 7 * 24 * 60 * 60 * 1000, sameSite: "None", secure: true });
+
+      createdStudents.push({
+        _id: newStudent._id,
+        name: newStudent.name,
+        email: newStudent.email,
+        subscription: newStudent.subscription,
+        createdAt: newStudent.createdAt,
+        token, // if you want to return token
+      });
+    }
+
+    if (createdStudents.length === 0) {
+      return res.status(400).json({ message: "All students already exist" });
+    }
+
+    return res.status(201).json({
+      message: "Students signup successful",
+      students: createdStudents,
+    });
+  } catch (error) {
+    console.log("Bulk Student Signup error", error);
+    res.status(500).json({ message: "Bulk Student Signup error" });
+  }
+};
+
 // =================== STUDENT LOGIN ===================
 export const StudentLogIn = async (req, res) => {
   try {
@@ -73,10 +133,10 @@ export const StudentLogIn = async (req, res) => {
     res.cookie("token", token, {
       httpOnly: true,
       maxAge: 7 * 24 * 60 * 60 * 1000,
-      sameSite: "None",
-      secure: true,
+      sameSite: "strict",
+      secure: false
     });
-
+   console.log("Student Login successful for:", student.email);
     return res.status(200).json({
       _id: student._id,
       name: student.name,

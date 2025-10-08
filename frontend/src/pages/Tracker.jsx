@@ -53,7 +53,7 @@ const Tracker = () => {
       <header className="text-center mb-12">
         <p className="text-gray-500 font-semibold mb-2">For Schools, Parents & Drivers</p>
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-yellow-600 mb-6">
-          myskoolbus Pro
+          Finder Pro
         </h1>
       </header>
 

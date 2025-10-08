@@ -134,26 +134,6 @@ export const DriverLogin = async (req, res) => {
 };
 
 
-//  to update database bus vlaue false 
-
-// export const logoutDriver = async (req, res) => {
-//   try {
-//     const { busNumber } = req.body;
-
-//     if (!busNumber) return res.status(400).json({ success: false, message: "Bus number is required" });
-//     console.log("this is busnumber f rom backend " , busNumber);
-
-//     await Bus.findOneAndUpdate(
-//       { busNumber },
-//       { $unset: { busNumber: "" }, isDriving: false }
-//     );
-
-//     res.json({ success: true, message: "Driver logged out successfully." });
-//   } catch (error) {
-//     console.error("Logout error:", error);
-//     res.status(500).json({ success: false, message: "Failed to logout driver." });
-//   }
-// }
 
 
 export const logoutDriver = async (req, res) => {
@@ -169,8 +149,7 @@ export const logoutDriver = async (req, res) => {
     // Set isAssigned = false and driver = null
     const bus = await Bus.findOneAndUpdate(
       { busNumber },
-      { isAssigned: false, driver: null },
-      { new: true }
+      { isAssigned: false },
     );
 
     if (!bus) {
