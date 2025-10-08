@@ -8,7 +8,8 @@ import axios from "axios";
 
 
 
-const API_BASE_URL = "http://localhost:5000";
+
+const API_BASE_URL = "https://collage-bus-tracker-backend.onrender.com";
 const LOGIN_ENDPOINT = "/api/driverprofile/driver/login";
 
 // Custom Spinner Component for consistency and aesthetics

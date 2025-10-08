@@ -45,7 +45,7 @@ const StudentAccessProfile = () => {
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 font-sans p-4">
-
+    
       <div className="w-full max-w-4xl min-h-[80vh] bg-gray-50 shadow-2xl rounded-2xl flex flex-col md:flex-row overflow-hidden">
 
         <div className="w-full md:w-1/3 lg:w-2/5 p-8 flex flex-col justify-center items-center text-center bg-purple-600 text-white">

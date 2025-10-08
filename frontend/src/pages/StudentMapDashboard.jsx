@@ -166,7 +166,8 @@ const StudentMapDashboard = () => {
   const addNotification = (message) => {
     const newNotif = { id: Date.now(), message, timestamp: new Date().toLocaleTimeString() };
     console.log("✅ Notification:", message);
-    setNotifications((prev) => [ newNotif]);
+    setNotifications((prev) => [newNotif]);
+
   };
 
   const handleLogout = () => { socket?.disconnect(); navigate("/"); toast.success(`Logged out successfully ${user.name}`); };
@@ -177,7 +178,7 @@ const StudentMapDashboard = () => {
     const checkProximity = () => {
       if (!closestBus || !userLocation) return;
       const now = Date.now();
-      const twoMinPassed = now - lastStopTime >  60000; // 1 minutes  means 6000 miliSeconds
+      const twoMinPassed = now - lastStopTime > 60000; // 1 minutes  means 6000 miliSeconds
 
       if (closestBus.distance <= 2000 && twoMinPassed) {
         addNotification(`🚍 Bus ${closestBus.bus.driverName} (${closestBus.bus.driverPhone}) is within ${(closestBus.distance / 1000).toFixed(2)} km!`);
@@ -250,45 +251,45 @@ const StudentMapDashboard = () => {
             ) : <p className="text-gray-500 text-center py-4">No buses nearby</p>}
           </div>
 
-            {/* Nearby Buses List */}
-<div className="bg-white p-4 sm:p-6 rounded-2xl shadow-xl">
-  <h3 className="font-semibold text-lg mb-3">Nearby Buses</h3>
-  {nearbyBuses.length > 0 ? (
-    <div className="space-y-3 max-h-60 overflow-y-auto">
-      {nearbyBuses.map((bus) => {
-        if (!bus.location || !userLocation) return null;
-        const distance = calculateDistance(
-          userLocation.latitude,
-          userLocation.longitude,
-          bus.location.latitude,
-          bus.location.longitude
-        );
-        return (
-          <div
-            key={bus.busId}
-            className="p-3 rounded-lg border-l-4 bg-gray-50 border-indigo-400 hover:bg-indigo-50 transition-all cursor-pointer"
-            onClick={() => setSelectedBus(bus)}
-          >
-            <div className="flex justify-between items-center">
-              <span className="font-semibold text-gray-800">Bus {bus.busId}</span>
-              <span className="text-xs text-blue-600 font-semibold">
-                {(distance / 1000).toFixed(2)} km
-              </span>
-            </div>
-            <p className="text-sm text-gray-600">
-              Driver: {bus.driverName || "Unknown"}
-            </p>
-            <p className="text-xs text-gray-500">
-              📞 {bus.driverPhone || "N/A"}
-            </p>
+          {/* Nearby Buses List */}
+          <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-xl">
+            <h3 className="font-semibold text-lg mb-3">Nearby Buses</h3>
+            {nearbyBuses.length > 0 ? (
+              <div className="space-y-3 max-h-60 overflow-y-auto">
+                {nearbyBuses.map((bus) => {
+                  if (!bus.location || !userLocation) return null;
+                  const distance = calculateDistance(
+                    userLocation.latitude,
+                    userLocation.longitude,
+                    bus.location.latitude,
+                    bus.location.longitude
+                  );
+                  return (
+                    <div
+                      key={bus.busId}
+                      className="p-3 rounded-lg border-l-4 bg-gray-50 border-indigo-400 hover:bg-indigo-50 transition-all cursor-pointer"
+                      onClick={() => setSelectedBus(bus)}
+                    >
+                      <div className="flex justify-between items-center">
+                        <span className="font-semibold text-gray-800">Bus {bus.busId}</span>
+                        <span className="text-xs text-blue-600 font-semibold">
+                          {(distance / 1000).toFixed(2)} km
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-600">
+                        Driver: {bus.driverName || "Unknown"}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        📞 {bus.driverPhone || "N/A"}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-gray-500 text-center py-4">No active buses nearby</p>
+            )}
           </div>
-        );
-      })}
-    </div>
-  ) : (
-    <p className="text-gray-500 text-center py-4">No active buses nearby</p>
-  )}
-</div>
 
 
           {/* Notifications */}

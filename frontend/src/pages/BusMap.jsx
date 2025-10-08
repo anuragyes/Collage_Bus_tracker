@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { User, MapPin, BusFront, Phone, Power, Check, X, LogOut } from "lucide-react";
+import { User, MapPin, BusFront, Phone, Power, Check, X, LogOut } from "lucide-react"; 
 import { io } from "socket.io-client";
 import { FaBus } from "react-icons/fa";
 import { GoogleMap, Marker, useLoadScript } from "@react-google-maps/api";
@@ -173,25 +173,48 @@ const Bus = () => {
     }
   };
 
-  const handleLogout = async () => {
-    if (user.isDriving) socket?.emit("driver_logout", { busId: user.busNumber });
-    console.log("this is user driver " , user);
-    await fetch("http://localhost:5000/api/driverprofile/driver/logout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ busNumber: user.busNumber }) });
-    socket?.disconnect();
-    toast.success(`${user.name} Logged out!`);
-    navigate("/");
-  };
+    const handleLogout = async () => {
+    try {
+        if (user?.isDriving) {
+            socket.emit("driver_logout", { busId: user.busNumber });
+        }
+
+          console.log("this is user" , user);
+
+        // Call backend to update DB
+        await fetch("https://collage-bus-tracker-backend.onrender.com/api/driverprofile/driver/logout", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ busNumber: user.busNumber })
+        });
+
+        socket.disconnect();
+        toast.success("Logged out successfully!");
+        navigate("/");
+    } catch (error) {
+        console.error("Logout failed:", error);
+        toast.error("Failed to logout. Try again.");
+    }
+};
 
   if (!location.state?.user) return null;
 
-  return (
-    <div className="min-h-screen bg-gray-100 font-sans p-4">
- 
-      <div className="max-w-6xl mx-auto bg-gray-50 p-8 rounded-2xl shadow-2xl">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">{user.name}'s Driver Dashboard</h1>
-          <button onClick={handleLogout} className="px-4 py-2 bg-gray-500 text-white rounded flex items-center"><LogOut className="mr-2 w-4 h-4" />Log Out</button>
-        </div>
+    return (
+        <div className="min-h-screen bg-gray-100 font-sans p-4">
+          
+            <div className="w-full max-w-6xl mx-auto bg-gray-50 shadow-2xl rounded-2xl p-8">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                    <h1 className="text-3xl font-bold text-gray-900 border-b pb-2 w-full md:w-auto">
+                        {user.name}'s Driver Dashboard
+                    </h1>
+                    <button
+                        onClick={handleLogout}
+                        className="flex items-center px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                    >
+                        <LogOut className="w-4 h-4 mr-2" />
+                        Log Out
+                    </button>
+                </div>
 
         <DrivingStatusDisplay isDriving={user.isDriving} onToggleStatus={handleToggleStatus} loading={statusLoading} />
 
