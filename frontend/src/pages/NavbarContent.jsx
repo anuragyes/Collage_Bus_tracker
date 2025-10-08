@@ -24,7 +24,7 @@ const NavbarContent = () => {
     { email: "praveen.kumar@example.com", password: "password123" },
     { email: "saurabh.sharma@example.com", password: "password123" },
     { email: "gopalakrishnan@example.com", password: "password123" },
-     { email: "ramachandran@example.com", password: "password123" }
+    { email: "ramachandran@example.com", password: "password123" }
   ];
 
   const buses = [
@@ -82,8 +82,8 @@ const NavbarContent = () => {
                 Set Tracker as Driver
               </button>
 
-            
-             
+
+
             </div>
           </div>
         </section>
@@ -241,7 +241,7 @@ const NavbarContent = () => {
               >
                 Driver Login
               </button>
-             
+
             </div>
           </div>
         </section>
