@@ -21,8 +21,8 @@ const DriverManagement = () => {
   useEffect(() => {
     const fetchDrivers = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/driverprofile/Alldriver');
-        console.log(response.data[0]);
+        const response = await axios.get('https://collage-bus-tracker-backend.onrender.com/api/driverprofile/Alldriver');
+        // console.log(response.data[0]);
         setDrivers(response.data);
       } catch (error) {
         console.error('Error fetching drivers:', error);
