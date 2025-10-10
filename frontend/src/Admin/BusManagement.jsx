@@ -4,11 +4,7 @@ import { FaUser } from "react-icons/fa";
 import toast from 'react-hot-toast';
 import { MdAirlineSeatReclineNormal } from "react-icons/md";
 const BusManagement = () => {
-  // const [buses, setBuses] = useState([
-  //   { id: 1, busNumber: 'BUS-001', route: 'Route A', capacity: 40, driver: 'John Driver', status: 'Active' },
-  //   { id: 2, busNumber: 'BUS-002', route: 'Route B', capacity: 35, driver: 'Jane Smith', status: 'Active' },
-  //   { id: 3, busNumber: 'BUS-003', route: 'Route C', capacity: 45, driver: 'Mike Johnson', status: 'Maintenance' },
-  // ]);
+ 
   const [buses, setBuses] = useState([]);
   const [loading, setloading] = useState(false)
   const [showModal, setShowModal] = useState(false);
@@ -50,7 +46,7 @@ const BusManagement = () => {
     const fetchbuses = async () => {
       try {
 
-        const response = await axios.get('http://localhost:5000/api/bus/allbuses');
+        const response = await axios.get('https://collage-bus-tracker-backend.onrender.com');
         setBuses(response.data);
         setloading(false)
       } catch (error) {
