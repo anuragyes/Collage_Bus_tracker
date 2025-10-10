@@ -75,7 +75,7 @@ const DriverManagement = () => {
           </span>
         </h1>
         <button
-          onClick={() => 
+          onClick={() =>
             toast.error('Feature coming soon!')
           }
           className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg w-full sm:w-auto"
@@ -108,7 +108,21 @@ const DriverManagement = () => {
                   </span>
                 </div>
 
-                <div><span className="font-medium">Joining Date:</span> {driver.createdAt }</div>
+                <div>
+                  <span className="font-medium">Joining Date:</span>
+
+                  {new Date(driver.createdAt).toLocaleString("en-US", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: true
+                  })}
+                </div>
+
+                <div><span className="font-medium">Password:</span>password123</div>
+
 
               </div>
             </div>
@@ -126,8 +140,12 @@ const DriverManagement = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Contact</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Assigned Bus</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Is Driving</th>
-
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Joining Date</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Password</th>
+
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Email
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -136,6 +154,8 @@ const DriverManagement = () => {
                   <td className="px-6 py-4 whitespace-nowrap">{driver.name}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{driver.phoneNumber
                   }</td>
+
+
                   <td className="px-6 py-4 whitespace-nowrap">{driver.bus || 'N/A'}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 py-1 rounded text-white text-xs ${driver.isDriving ? 'bg-green-600' : 'bg-red-600'}`}>
@@ -144,10 +164,21 @@ const DriverManagement = () => {
                   </td>
 
 
-                   <td className="px-6   py-4 whitespace-nowrap">{driver.
-                      createdAt
+                  <td className="px-6   py-4 whitespace-nowrap">{new Date(driver.
+                    createdAt).toDateString("en-Us", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: true
+                    })
 
-                    }</td>
+                  }</td>
+
+                  <td className="px-6 py-4 whitespace-nowrap">password123</td>
+                   <td className="px-6 py-4 whitespace-nowrap">{driver.email}</td>
+
 
 
                 </tr>

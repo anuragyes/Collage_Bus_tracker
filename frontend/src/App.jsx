@@ -87,9 +87,8 @@ const AdminLayout = () => {
           <div
             className="fixed inset-0"
             onClick={() =>
-              
                setSidebarOpen(false)
-              // <DashboardHome/>
+            
               
               }
                

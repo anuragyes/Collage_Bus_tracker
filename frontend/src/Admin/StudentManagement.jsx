@@ -59,7 +59,7 @@ const StudentManagement = () => {
           </span>
         </h1>
         <button
-          onClick={() =>toast.error('Feature coming soon!')}
+          onClick={() => toast.error('Feature coming soon!')}
           className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg w-full sm:w-auto"
         >
           Add Student
@@ -95,8 +95,20 @@ const StudentManagement = () => {
 
 
               <div>
-                <span className="font-medium">Joining Date:</span> {student.createdAt
+                <span className="font-medium">Joining Date:</span> {
+                  new Date(student.createdAt).toLocaleString("en-US", { 
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: true
+                  })
                 }
+              </div>
+
+              <div>
+                <span className="font-medium">Password:</span> pass1234
               </div>
             </div>
           </div>
@@ -115,6 +127,7 @@ const StudentManagement = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Contact</th>
 
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">joining Date</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Password</th>
 
               </tr>
             </thead>
@@ -133,10 +146,18 @@ const StudentManagement = () => {
                   <td className="px-6 py-4 whitespace-nowrap">{student.email}</td>
                   <td className="px-6 py-4 whitespace-nowrap">986574112</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-
-                    {student.createdAt
-                    }
+                     {/* this is the way to covert the date  */}
+                    {new Date(student.createdAt).toLocaleString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: true
+                    })}
                   </td>
+
+                  <td className="px-6 py-4 whitespace-nowrap">pass1234</td>
                 </tr>
               ))}
             </tbody>
