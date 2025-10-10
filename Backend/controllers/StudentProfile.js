@@ -136,7 +136,7 @@ export const StudentLogIn = async (req, res) => {
       sameSite: "strict",
       secure: false
     });
-   console.log("Student Login successful for:", student.email);
+    console.log("Student Login successful for:", student.email);
     return res.status(200).json({
       _id: student._id,
       name: student.name,
@@ -216,5 +216,16 @@ export const StudentRiding = async (req, res) => {
   } catch (error) {
     console.log("Student Riding error", error);
     res.status(500).json({ message: "Student Riding error" });
+  }
+};
+
+export const AllStudents = async (req, res) => {
+  try {
+    const students = await Student.find().select("-password");    //select withpassword 
+    res.status(200).json(students);
+  }
+  catch (error) {
+    console.error("Error fetching students:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };

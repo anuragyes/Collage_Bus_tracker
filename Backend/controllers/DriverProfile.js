@@ -3,6 +3,7 @@ import { genToken } from "../config/JWTToken.js";
 import Bus from "../models/Busmodel.js";
 import DriverProfile from "../models/AccessDriver.js";
 
+
 // =================== ADMIN: Add single driver ===================
 export const adminDriver = async (req, res) => {
   try {
@@ -217,3 +218,17 @@ export const startDriverRide = async (req, res) => {
     res.status(500).json({ message: "Server error. Please try again later." });
   }
 };
+
+
+
+export const getAllDriverDetails = async (req, res) => {
+
+  try {
+    const AllDrivers = await  DriverProfile.find();
+    res.status(200).json(AllDrivers);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error });
+  }
+
+
+}

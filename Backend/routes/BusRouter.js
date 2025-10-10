@@ -1,5 +1,6 @@
 import express from "express";
 import Bus from "../models/Busmodel.js";
+import { getBusses } from "../controllers/getBusses.js";
 
 const router = express.Router();
 
@@ -72,5 +73,7 @@ router.post("/register-multiple", async (req, res) => {
   }
 });
 
+
+ router.get("/allbuses",getBusses);
 
 export default router;

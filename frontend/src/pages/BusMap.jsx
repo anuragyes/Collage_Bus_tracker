@@ -182,7 +182,7 @@ const Bus = () => {
           console.log("this is user" , user);
 
         // Call backend to update DB
-        await fetch("https://collage-bus-tracker-backend.onrender.com/api/driverprofile/driver/logout", {
+        await fetch("http://localhost:5000/api/driverprofile/driver/logout", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ busNumber: user.busNumber })

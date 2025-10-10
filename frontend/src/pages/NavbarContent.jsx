@@ -13,28 +13,28 @@ const NavbarContent = () => {
   const { currentStudent, currentDriver } = useContext(AuthContext);
 
   // Mock data - replace with your actual data
-  const students = [
-    { email: "ravi.sharma@example.com", password: "pass1234" },
-    { email: "priya.patel@example.com", password: "pass1234" },
-    { email: "suresh.yadav@example.com", password: "pass1234" },
-    { email: "anjali.gupta@example.com", password: "pass1234" },
-  ];
+  // const students = [
+  //   { email: "ravi.sharma@example.com", password: "pass1234" },
+  //   { email: "priya.patel@example.com", password: "pass1234" },
+  //   { email: "suresh.yadav@example.com", password: "pass1234" },
+  //   { email: "anjali.gupta@example.com", password: "pass1234" },
+  // ];
 
-  const drivers = [
-    { email: "praveen.kumar@example.com", password: "password123" },
-    { email: "saurabh.sharma@example.com", password: "password123" },
-    { email: "gopalakrishnan@example.com", password: "password123" },
-    { email: "ramachandran@example.com", password: "password123" }
-  ];
+  // const drivers = [
+  //   { email: "praveen.kumar@example.com", password: "password123" },
+  //   { email: "saurabh.sharma@example.com", password: "password123" },
+  //   { email: "gopalakrishnan@example.com", password: "password123" },
+  //   { email: "ramachandran@example.com", password: "password123" }
+  // ];
 
-  const buses = [
-    { number: "JK-02-V-3030" },
-    { number: "ML-01-X-5050" },
-    { number: "AR-01-W-4040" },
-    { number: "MZ-01-Y-6060" },
-    { number: "NL-01-Z-7070" },
-    { number: "SK-01-A-8080" }
-  ];
+  // const buses = [
+  //   { number: "JK-02-V-3030" },
+  //   { number: "ML-01-X-5050" },
+  //   { number: "AR-01-W-4040" },
+  //   { number: "MZ-01-Y-6060" },
+  //   { number: "NL-01-Z-7070" },
+  //   { number: "SK-01-A-8080" }
+  // ];
 
   const handleStudent = () => {
     console.log("clicked")
@@ -47,6 +47,11 @@ const NavbarContent = () => {
     toast.success("Welcome to the page Driver Portal!");
   };
 
+
+   const handleAdmin = ()=>{
+     navigate("/admin");
+    toast.success("Welcome to the Admin page! ");
+   }
 
 
   return (
@@ -83,70 +88,20 @@ const NavbarContent = () => {
               </button>
 
 
+         <button
+                onClick={handleAdmin}
+                className="w-full sm:w-auto border border-purple-600 text-purple-600 hover:bg-purple-600 hover:text-white px-5 sm:px-8 py-3 rounded-full font-semibold transition-all duration-300 hover:shadow-lg transform hover:scale-105 text-sm sm:text-lg min-w-[160px] sm:min-w-[200px]"
+              >
+                 Admin DashBoard
+              </button>
+
+
 
             </div>
           </div>
         </section>
 
-        {/* Admin Information Section */}
-        <section className="py-10 sm:py-12 md:py-16 bg-white">
-          <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center text-gray-900 mb-8 md:mb-12">
-              Admin Information
-            </h2>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
-              {/* Students Information */}
-              <div className="bg-purple-50 rounded-xl shadow-lg p-6 border border-purple-200">
-                <h3 className="text-xl font-bold text-purple-800 mb-4 flex items-center">
-                  <span className="mr-2">👨‍🎓</span> Students Information
-                </h3>
-                <div className="space-y-3">
-                  {students.map((student, index) => (
-                    <div key={index} className="bg-white rounded-lg p-4 shadow-sm border border-purple-100">
-                      <p className="font-semibold text-gray-800">Email: {student.email}</p>
-                      <p className="text-sm text-gray-600">Password: {student.password}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Drivers Information */}
-              <div className="bg-blue-50 rounded-xl shadow-lg p-6 border border-blue-200">
-                <h3 className="text-xl font-bold text-blue-800 mb-4 flex items-center">
-                  <span className="mr-2">👨‍💼</span> Drivers Information
-                </h3>
-                <div className="space-y-3">
-                  {drivers.map((driver, index) => (
-                    <div key={index} className="bg-white rounded-lg p-4 shadow-sm border border-blue-100">
-                      <p className="font-semibold text-gray-800">Email: {driver.email}</p>
-                      <p className="text-sm text-gray-600">Password: {driver.password}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Buses Information */}
-              <div className="bg-green-50 rounded-xl shadow-lg p-6 border border-green-200">
-                <h3 className="text-xl font-bold text-green-800 mb-4 flex items-center">
-                  <span className="mr-2">🚌</span> Buses Information
-                </h3>
-                <div className="space-y-3">
-                  {buses.map((bus, index) => (
-                    <div key={index} className="bg-white rounded-lg p-4 shadow-sm border border-green-100">
-                      <p className="font-semibold text-gray-800">Bus Number: {bus.number}</p>
-                      <p className="text-sm text-gray-600">Route: {bus.route}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-
-
-          </div>
-        </section>
-
+          
         {/* Features Section */}
         <section className="py-10 sm:py-12 md:py-16 bg-gray-50">
           <div className="container mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">

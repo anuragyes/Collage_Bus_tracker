@@ -173,7 +173,7 @@ const StudentMapDashboard = () => {
   const handleLogout = () => { socket?.disconnect(); navigate("/"); toast.success(`Logged out successfully ${user.name}`); };
   const clearNotification = (id) => setNotifications(prev => prev.filter(n => n.id !== id));
 
-  // 🚨 Check proximity every few seconds
+  // Check proximity every few seconds
   useEffect(() => {
     const checkProximity = () => {
       if (!closestBus || !userLocation) return;
