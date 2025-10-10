@@ -34,7 +34,7 @@ const StudentManagement = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/student/allstudents');
+        const response = await axios.get('https://collage-bus-tracker-backend.onrender.com/api/student/allstudents');
 
         console.log(response.data[0]);
         setStudents(response.data);
