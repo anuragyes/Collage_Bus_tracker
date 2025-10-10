@@ -46,7 +46,7 @@ const BusManagement = () => {
     const fetchbuses = async () => {
       try {
 
-        const response = await axios.get('https://collage-bus-tracker-backend.onrender.com');
+        const response = await axios.get('https://collage-bus-tracker-backend.onrender.com/api/bus/allbuses');
         setBuses(response.data);
         setloading(false)
       } catch (error) {
