@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
 import { genToken } from "../config/JWTToken.js";
 import Bus from "../models/Busmodel.js";
+ import jwt from "jsonwebtoken";
 import DriverProfile from "../models/AccessDriver.js";
 
 
@@ -43,23 +44,36 @@ export const adminDriver = async (req, res) => {
 // =================== ADMIN: Add multiple drivers ===================
 export const adminAddMultipleDrivers = async (req, res) => {
   try {
-    const { drivers } = req.body; // expect array
+    const { drivers } = req.body;
+
     if (!drivers || !Array.isArray(drivers) || drivers.length === 0)
       return res.status(400).json({ message: "Drivers array required" });
 
     const createdDrivers = [];
+    const errors = [];
 
     for (const d of drivers) {
-      const { name, email, password, busNumber, phoneNumber } = d;
+      const { name, email, password, busNumber, phoneNumber, location, tripHistory } = d;
 
-      if (!name || !email || !password || !busNumber || !phoneNumber)
-        return res.status(400).json({ message: `All fields required for ${email}` });
+      if (!name || !email || !password || !phoneNumber) {
+        errors.push(`All fields required for ${email || "unknown email"}`);
+        continue;
+      }
 
-      if (password.length < 6)
-        return res.status(400).json({ message: `Password too short for ${email}` });
+      if (password.length < 6) {
+        errors.push(`Password too short for ${email}`);
+        continue;
+      }
 
-      const exists = await DriverProfile.findOne({ $or: [{ email }, { busNumber }] });
-      if (exists) return res.status(400).json({ message: `Driver exists: ${email}` });
+      // Check if driver already exists
+      const query = { email };
+      if (busNumber) query.busNumber = busNumber;
+
+      const exists = await DriverProfile.findOne(query);
+      if (exists) {
+        errors.push(`Driver exists: ${email}`);
+        continue;
+      }
 
       const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -67,28 +81,32 @@ export const adminAddMultipleDrivers = async (req, res) => {
         name,
         email,
         password: hashedPassword,
-        busNumber,
+        busNumber: busNumber || null,
         phoneNumber,
         isDriving: false,
-        location: d.location || { lat: 0, lng: 0 },
-        tripHistory: d.tripHistory || [],
+        location: location || { lat: null, lng: null },
+        tripHistory: tripHistory || [],
       });
 
       createdDrivers.push(driver);
     }
 
-    res.status(201).json({ message: "Drivers added successfully", drivers: createdDrivers });
+    res.status(201).json({
+      message: "Drivers added successfully",
+      drivers: createdDrivers,
+      errors: errors.length ? errors : undefined,
+    });
   } catch (error) {
     console.error("Bulk driver creation error:", error);
-    res.status(500).json({ message: "Bulk driver creation failed" });
+    res.status(500).json({ message: "Bulk driver creation failed", error: error.message });
   }
 };
 
 export const DriverLogin = async (req, res) => {
   try {
-    const { email, password, busNumber } = req.body;
+    const { email, password, busNumber, phoneNumber } = req.body;
 
-    if (!email || !password || !busNumber)
+    if (!email || !password || !busNumber || phoneNumber)
       return res.status(400).json({ message: "Email, password & busNumber required" });
 
     // 1️⃣ Find driver
@@ -104,21 +122,24 @@ export const DriverLogin = async (req, res) => {
     if (!bus) return res.status(404).json({ message: "Bus number not registered by school" });
 
     // 4️⃣ Check if bus is already assigned to another driver
-    if (bus.isAssigned && bus.assignedDriver?.toString() !== driver._id.toString()) {
+    if (bus.isAssigned && bus.driver?.toString() !== driver._id.toString()) {
       return res.status(403).json({ message: "Bus is already assigned to another driver" });
     }
 
-    // 5️⃣ Assign bus to driver (if not already assigned)
+    // 5️⃣ Assign bus to driver
     bus.isAssigned = true;
-    bus.assignedDriver = driver._id;
-    bus.driverPhoneNumber = driver.phoneNumber;
+    bus.driver = driver._id; // save reference
+    bus.driverName = driver.name; // ✅ save name directly
+    bus.driverPhoneNumber = driver.phoneNumber; // ✅ optional field
     await bus.save();
 
+    // 6️⃣ Update driver model
     driver.busNumber = busNumber;
     driver.isDriving = true;
+    driver.assignedBus = bus._id;
     await driver.save();
 
-    // 6️⃣ Generate token & set cookie
+    // 7️⃣ Generate token & set cookie
     const token = genToken(driver._id);
     res.cookie("token", token, {
       httpOnly: true,
@@ -127,12 +148,30 @@ export const DriverLogin = async (req, res) => {
       secure: process.env.NODE_ENV === "production",
     });
 
-    res.status(200).json({ message: "Login successful", driver });
+    // 8️⃣ Return both driver and bus info
+    res.status(200).json({
+      message: "Login successful",
+      driver: {
+        _id: driver._id,
+        name: driver.name,
+        email: driver.email,
+        busNumber: driver.busNumber,
+        isDriving: driver.isDriving,
+        phoneNumber: driver.phoneNumber,
+      },
+      bus: {
+        busNumber: bus.busNumber,
+        isAssigned: bus.isAssigned,
+        driverName: bus.driverName,
+        driverPhoneNumber: bus.driverPhoneNumber,
+      },
+    });
   } catch (error) {
     console.error("Driver login error:", error);
     res.status(500).json({ message: "Server error during login" });
   }
 };
+
 
 export const logoutDriver = async (req, res) => {
   try {
@@ -148,9 +187,16 @@ export const logoutDriver = async (req, res) => {
     // 1️⃣ Update the Bus model: mark as unassigned
     const bus = await Bus.findOneAndUpdate(
       { busNumber },
-      { $set: { isAssigned: false, driver: null } },
+      {
+        $set: {
+          driverName: "Unknown",
+          isAssigned: false,
+          driver: null
+        }
+      },
       { new: true }
     );
+
 
     if (!bus) {
       return res.status(404).json({
@@ -261,6 +307,9 @@ export const startDriverRide = async (req, res) => {
 
 
 
+
+
+
 export const getAllDriverDetails = async (req, res) => {
 
   try {
@@ -310,3 +359,58 @@ export const updateDriverBusAssignment = async (req, res) => {
     res.status(500).json({ message: "Internal server error", error: error.message });
   }
 };
+
+
+
+
+
+  export const driverSignup = async(req,res)=>{
+ try {
+    const { name, email, password, phoneNumber } = req.body;
+
+    // ✅ Check if student already exists
+    const existingDriver = await DriverProfile.findOne({ email });
+    if (existingDriver) {
+      return res.status(400).json({ message: "Driver already registered" });
+    }
+    
+
+     if(phoneNumber<10){
+      return res.status(201).json({message:"valid phone number add"})
+     }
+    // ✅ Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // ✅ Create new student
+    const newDriverProfile = new DriverProfile({
+      name,
+      email,
+      password: hashedPassword,
+      phoneNumber,
+    });
+
+    await newDriverProfile.save();
+
+    // ✅ Generate JWT token
+    const token = jwt.sign({ id: newDriverProfile._id }, "SECRET_KEY", {
+      expiresIn: "7d",
+    });
+
+    // ✅ Send response
+    res.status(201).json({
+      message: "Signup successful",
+      token,
+      student: {
+        id: newDriverProfile._id,
+        name: newDriverProfile.name,
+        email: newDriverProfile.email,
+        phoneNumber: newDriverProfile.phoneNumber,
+        subscription: newDriverProfile.subscription,
+        createdAt: newDriverProfile.createdAt,
+      },
+    });
+  } catch (error) {
+    console.error("Signup Error:", error.message);
+    res.status(500).json({ message: "Something went wrong!" });
+  }
+  }

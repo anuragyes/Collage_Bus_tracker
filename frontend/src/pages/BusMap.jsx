@@ -38,7 +38,7 @@ const DrivingStatusDisplay = ({ isDriving, onToggleStatus, loading }) => (
         </span>
       </div>
     </div>
-
+{/* 
     <button
       onClick={onToggleStatus}
       disabled={loading}
@@ -60,7 +60,7 @@ const DrivingStatusDisplay = ({ isDriving, onToggleStatus, loading }) => (
           Start Ride
         </>
       )}
-    </button>
+    </button> */}
   </div>
 );
 
@@ -132,6 +132,10 @@ const Bus = () => {
   const [statusLoading, setStatusLoading] = useState(false);
   const [currentLocation, setCurrentLocation] = useState(null);
   const [socket, setSocket] = useState(null);
+
+
+
+  console.log("this is user detaisl " , user);
 
   // Redirect if no user
   useEffect(() => { if (!location.state?.user) navigate("/", { replace: true }); }, [location, navigate]);

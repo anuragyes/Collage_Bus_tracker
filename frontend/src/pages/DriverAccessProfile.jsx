@@ -9,7 +9,7 @@ import axios from "axios";
 
 
 
-const API_BASE_URL = "http://localhost:5000"; // Adjust as needed
+const API_BASE_URL = "http://localhost:5000";
 const LOGIN_ENDPOINT = "/api/driverprofile/driver/login";
 
 // Custom Spinner Component for consistency and aesthetics
@@ -59,6 +59,7 @@ const DriverAccessProfile = () => {
             if (response.data && response.data.driver) {
                 toast.success(response.data.message);
                 // Navigating to the dashboard path
+                //  console.log("this is profile destials of driver ", response);
                 navigate("/dashboard", { state: { user: response.data.driver } });
             } else {
                 throw new Error("Server response missing driver data.");

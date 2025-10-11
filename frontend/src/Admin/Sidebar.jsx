@@ -3,9 +3,9 @@ import { MdAdminPanelSettings } from "react-icons/md";
 const Sidebar = ({ activeTab, setActiveTab, setSidebarOpen }) => {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: '📊' },
-    { id: 'students', label: 'Student Management', icon: '👨‍🎓' },
-    { id: 'buses', label: 'Bus Management', icon: '🚌' },
-    { id: 'drivers', label: 'Driver Management', icon: '👨‍✈️' },
+    { id: 'students', label: 'Student Dashboard', icon: '👨‍🎓' },
+    { id: 'buses', label: 'Bus Dashboard', icon: '🚌' },
+    { id: 'drivers', label: 'Driver Dashboards', icon: '👨‍✈️' },
   ];
 
   const handleMenuClick = (tabId) => {

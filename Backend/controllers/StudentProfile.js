@@ -1,48 +1,54 @@
 import bcrypt from "bcrypt";
 import { genToken } from "../config/JWTToken.js";
 import Student from "../models/StudentModel.js";
+import jwt from "jsonwebtoken";
 
 // =================== STUDENT SIGNUP ===================
 export const StudentSignUp = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, phoneNumber } = req.body;
 
+    // ✅ Check if student already exists
     const existingStudent = await Student.findOne({ email });
     if (existingStudent) {
       return res.status(400).json({ message: "Student already registered" });
     }
 
+    // ✅ Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newStudent = await Student.create({
+    // ✅ Create new student
+    const newStudent = new Student({
       name,
       email,
       password: hashedPassword,
-      subscription: true, // active by default
+      phoneNumber,
+      subscription: true,
     });
 
-    const token = await genToken(newStudent._id);
+    await newStudent.save();
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-      sameSite: "None", // ✅ works with cross-site
-      secure: true,     // ✅ must be true on HTTPS
+    // ✅ Generate JWT token
+    const token = jwt.sign({ id: newStudent._id }, "SECRET_KEY", {
+      expiresIn: "7d",
     });
 
-    return res.status(201).json({
+    // ✅ Send response
+    res.status(201).json({
       message: "Signup successful",
+      token,
       student: {
-        _id: newStudent._id,
+        id: newStudent._id,
         name: newStudent.name,
         email: newStudent.email,
+        phoneNumber: newStudent.phoneNumber,
         subscription: newStudent.subscription,
         createdAt: newStudent.createdAt,
       },
     });
   } catch (error) {
-    console.log("Student Signup error", error);
-    res.status(500).json({ message: "Student Signup error" });
+    console.error("Signup Error:", error.message);
+    res.status(500).json({ message: "Something went wrong!" });
   }
 };
 

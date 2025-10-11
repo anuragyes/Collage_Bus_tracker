@@ -2,24 +2,34 @@ import mongoose from "mongoose";
 
 const busSchema = new mongoose.Schema(
   {
-    busNumber: { 
-      type: String, 
-      required: true, 
+    busNumber: {
+      type: String,
+      required: true,
       unique: true,
       trim: true,
     },
-    route: { 
-      type: String, 
-      required: true,
+    route: {
+      type: String,
       trim: true,
     },
-    isAssigned: { 
-      type: Boolean, 
+    capacity: {
+      type: Number, // total number of passengers the bus can hold
+    },
+    isAssigned: {
+      type: Boolean,
       default: false,
     },
     driver: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Driver",
+      default: null,
+    },
+    driverName: {
+      type: String,
+      default: null, // name of the driver (for admin UI)
+    },
+    driverPhoneNumber: {
+      type: String,
       default: null,
     },
     currentLocation: {
@@ -32,5 +42,4 @@ const busSchema = new mongoose.Schema(
 );
 
 const Bus = mongoose.model("Bus", busSchema);
-
 export default Bus;

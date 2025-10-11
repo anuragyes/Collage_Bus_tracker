@@ -9,60 +9,44 @@ const DriverManagement = () => {
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
-    license: '',
-    contact: '',
-    bus: '',
-    status: 'Active'
+    phoneNumber: '',
+    email: '',
+    password: ''
   });
 
+  // ✅ Fetch all drivers
+  const fetchDrivers = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/api/driverprofile/Alldriver');
+      setDrivers(response.data);
+    } catch (error) {
+      console.error('Error fetching drivers:', error);
+      toast.error('Failed to load drivers');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-
-  // ✅ Fetch all drivers from backend
   useEffect(() => {
-    const fetchDrivers = async () => {
-      try {
-        const response = await axios.get('http://localhost:5000/api/driverprofile/Alldriver');
-        console.log(response.data[0]);
-        setDrivers(response.data);
-      } catch (error) {
-        console.error('Error fetching drivers:', error);
-        toast.error('Failed to load drivers');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchDrivers();
   }, []);
 
-  // ✅ Submit new driver
+  // ✅ Submit new driver and refresh list
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post('http://localhost:5000/api/driverprofile/create', formData);
-      toast.success('Driver added!');
-      setDrivers(prev => [...prev, res.data]);
+      await axios.post('http://localhost:5000/api/driverprofile/driversignup', formData);
+      toast.success('Driver added successfully!');
+      setFormData({ name: '', phoneNumber: '', email: '', password: '' });
       setShowModal(false);
-      setFormData({ name: '', license: '', contact: '', bus: '', status: 'Active' });
+      fetchDrivers(); // ✅ Refresh the driver list again
     } catch (error) {
       console.error('Error adding driver:', error);
-      toast.error('Failed to add driver');
+      toast.error(error.response?.data?.message || 'Failed to add driver');
     }
   };
 
-  // ✅ Delete driver
-  const handleDelete = async (id) => {
-    try {
-      await axios.delete(`http://localhost:5000/api/driverprofile/delete/${id}`);
-      toast.success('Driver deleted');
-      setDrivers(drivers.filter(d => d._id !== id));
-    } catch (error) {
-      console.error('Error deleting driver:', error);
-      toast.error('Failed to delete driver');
-    }
-  };
-
-  if (loading) return <p>Loading drivers...</p>;
+  if (loading) return <p className="text-center mt-10">Loading drivers...</p>;
 
   return (
     <div className="p-4">
@@ -75,162 +59,58 @@ const DriverManagement = () => {
           </span>
         </h1>
         <button
-          onClick={() =>
-            toast.error('Feature coming soon!')
-          }
+          onClick={() => setShowModal(true)}
           className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg w-full sm:w-auto"
         >
           Add Driver
         </button>
       </div>
 
-      {/* Mobile View */}
-      <div className="lg:hidden space-y-4">
-        {drivers.length === 0 ? (
-          <p className="text-gray-600">No drivers available. Please add a driver.</p>
-        ) : (
-          drivers.map((driver) => (
-            <div key={driver._id} className="bg-white rounded-lg shadow p-4">
-              <div className="flex justify-between items-start mb-3">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-800">{driver.name}</h3>
-                  <p className="text-sm text-gray-600">Contact: {driver.phoneNumber
-                  }</p>
-                </div>
-
-              </div>
-              <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
-                <div><span className="font-medium">Assigned Bus:</span> {driver.
-                  busNumber || 'N/A'}</div>
-                <div className="flex items-center space-x-2">
-                  <span className="font-medium">Is Driving:</span>
-                  <span className={`text-white px-2 py-1 rounded text-xs ${driver.isDriving ? 'bg-green-600' : 'bg-red-500'}`}>
+      {/* Driver Table */}
+      <div className="overflow-x-auto bg-white rounded-lg shadow mt-6">
+        <table className="min-w-full text-sm text-gray-700 border-collapse">
+          <thead className="bg-gray-50">
+            <tr>
+              {['Name', 'Contact', 'Email', 'BusNumber', 'Is Driving', 'Joining Date', 'Password'].map((header) => (
+                <th key={header} className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">{header}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {drivers.map((driver) => (
+              <tr key={driver._id} className="hover:bg-gray-50">
+                <td className="px-4 py-2">{driver.name}</td>
+                <td className="px-4 py-2">{driver.phoneNumber}</td>
+                <td className="px-4 py-2">{driver.email}</td>
+                <td className="px-4 py-2">{driver.busNumber || 'N/A'}</td>
+                <td className="px-4 py-2">
+                  <span className={`px-2 py-1 rounded text-white text-xs ${driver.isDriving ? 'bg-green-600' : 'bg-red-600'}`}>
                     {driver.isDriving ? 'Yes' : 'No'}
                   </span>
-                </div>
-
-                <div>
-                  <span className="font-medium">Joining Date:</span>
-
-                  {new Date(driver.createdAt).toLocaleString("en-US", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    hour12: true
-                  })}
-                </div>
-
-                <div><span className="font-medium">Password:</span>password123</div>
-
-
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-
-      {/* Desktop Table View */}
-      <div className="hidden lg:block bg-white rounded-lg shadow overflow-hidden mt-6">
-        <div className="overflow-x-auto">
-          <table className="min-w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Contact</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">BusNumber</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Is Driving</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Joining Date</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Password</th>
-
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Email
-                </th>
+                </td>
+                <td className="px-4 py-2">{new Date(driver.createdAt).toLocaleString()}</td>
+                <td className="px-4 py-2">password123</td>
               </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {drivers.map((driver) => (
-                <tr key={driver._id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">{driver.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{driver.phoneNumber
-                  }</td>
-
-
-                  <td className="px-6 py-4 whitespace-nowrap">{driver.
-                    busNumber || 'N/A'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 rounded text-white text-xs ${driver.isDriving ? 'bg-green-600' : 'bg-red-600'}`}>
-                      {driver.isDriving ? 'Yes' : 'No'}
-                    </span>
-                  </td>
-
-
-                  <td className="px-6   py-4 whitespace-nowrap">{new Date(driver.
-                    createdAt).toDateString("en-Us", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      hour12: true
-                    })
-
-                  }</td>
-
-                  <td className="px-6 py-4 whitespace-nowrap">password123</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{driver.email}</td>
-
-
-
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
       </div>
 
       {/* Add Driver Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <h2 className="text-xl font-bold mb-4">Add New Driver</h2>
-              <form onSubmit={handleSubmit}>
-                <div className="space-y-4">
-                  <inputField label="Full Name" value={formData.name} onChange={(val) => setFormData({ ...formData, name: val })} />
-                  <inputField label="Contact" value={formData.contact} onChange={(val) => setFormData({ ...formData, contact: val })} />
-                  <inputField label="Assigned Bus" value={formData.bus} onChange={(val) => setFormData({ ...formData, bus: val })} />
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                    <select
-                      value={formData.status}
-                      onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value="Active">Active</option>
-                      <option value="Inactive">Inactive</option>
-                      <option value="On Leave">On Leave</option>
-                    </select>
-                  </div>
-                </div>
-                <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 mt-6">
-                  <button
-                    type="button"
-                    onClick={() => setShowModal(false)}
-                    className="px-4 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg w-full sm:w-auto"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg w-full sm:w-auto"
-                  >
-                    Add Driver
-                  </button>
-                </div>
-              </form>
-            </div>
+          <div className="bg-white rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto p-6">
+            <h2 className="text-xl font-bold mb-4">Add New Driver</h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <InputField label="Full Name" value={formData.name} onChange={(val) => setFormData({ ...formData, name: val })} />
+              <InputField label="Phone Number" value={formData.phoneNumber} onChange={(val) => setFormData({ ...formData, phoneNumber: val })} />
+              <InputField label="Email" value={formData.email} onChange={(val) => setFormData({ ...formData, email: val })} />
+              <InputField label="Password" type="password" value={formData.password} onChange={(val) => setFormData({ ...formData, password: val })} />
+              <div className="flex flex-col sm:flex-row justify-end gap-3 mt-4">
+                <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 border rounded w-full sm:w-auto">Cancel</button>
+                <button type="submit" className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded w-full sm:w-auto">Add Driver</button>
+              </div>
+            </form>
           </div>
         </div>
       )}
@@ -238,12 +118,12 @@ const DriverManagement = () => {
   );
 };
 
-// ✅ Simple reusable input field
-const inputField = ({ label, value, onChange }) => (
+// Reusable Input Component
+const InputField = ({ label, value, onChange, type = 'text' }) => (
   <div>
     <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
     <input
-      type="text"
+      type={type}
       value={value}
       onChange={(e) => onChange(e.target.value)}
       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
