@@ -134,33 +134,73 @@ export const DriverLogin = async (req, res) => {
   }
 };
 
-
-
-
 export const logoutDriver = async (req, res) => {
   try {
     const { busNumber } = req.body;
 
     if (!busNumber) {
-      return res.status(400).json({ success: false, message: "Bus number is required" });
+      return res.status(400).json({
+        success: false,
+        message: "Bus number is required",
+      });
     }
 
-    console.log("Bus logout request for:", busNumber);
-
-    // Set isAssigned = false and driver = null
+    // 1️⃣ Update the Bus model: mark as unassigned
     const bus = await Bus.findOneAndUpdate(
       { busNumber },
-      { isAssigned: false },
+      { $set: { isAssigned: false, driver: null } },
+      { new: true }
     );
 
     if (!bus) {
-      return res.status(404).json({ success: false, message: "Bus not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Bus not found",
+      });
     }
 
-    res.json({ success: true, message: "Driver logged out successfully.", bus });
+    // 2️⃣ Update the DriverProfile model
+    const driver = await DriverProfile.findOneAndUpdate(
+      { busNumber }, // find driver with that bus
+      {
+        $set: {
+          isDriving: false,
+          isAssigned: false,
+        },
+        $unset: {
+          busNumber: "", // remove the field entirely to avoid duplicate key error
+        },
+      },
+      { new: true }
+    );
+
+    if (!driver) {
+      return res.status(404).json({
+        success: false,
+        message: "Driver not found",
+      });
+    }
+
+    // 3️⃣ Clear cookie (logout)
+    res.clearCookie("token", {
+      httpOnly: true,
+      sameSite: "strict",
+      secure: process.env.NODE_ENV === "production",
+    });
+
+    return res.json({
+      success: true,
+      message: "Driver logged out successfully.",
+      bus,
+      driver,
+    });
   } catch (error) {
     console.error("Logout error:", error);
-    res.status(500).json({ success: false, message: "Failed to logout driver." });
+    return res.status(500).json({
+      success: false,
+      message: "Failed to logout driver.",
+      error: error.message,
+    });
   }
 };
 
@@ -224,11 +264,49 @@ export const startDriverRide = async (req, res) => {
 export const getAllDriverDetails = async (req, res) => {
 
   try {
-    const AllDrivers = await  DriverProfile.find();
+    const AllDrivers = await DriverProfile.find();
     res.status(200).json(AllDrivers);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error });
   }
 
-
 }
+
+
+// when Driver logs in, they can start their ride by providing their credentials and bus number.  in admin dashboard  
+
+export const updateDriverBusAssignment = async (req, res) => {
+  try {
+    const driverId = req.driver?._id; // driver ID from middleware/auth
+    const { busNumber, isDriving } = req.body;
+
+    if (!driverId) {
+      return res.status(401).json({ message: "Unauthorized: driver not found" });
+    }
+
+    if (!busNumber) {
+      return res.status(400).json({ message: "Bus number is required" });
+    }
+
+    // Find driver
+    const driver = await DriverProfile.findById(driverId);
+    if (!driver) {
+      return res.status(404).json({ message: "Driver not found" });
+    }
+
+    // Update fields
+    driver.busNumber = busNumber;
+    driver.isDriving = isDriving ?? true; // default true if not provided
+    driver.isAssigned = !!isDriving; // optional: set isAssigned same as isDriving
+
+    await driver.save();
+
+    res.status(200).json({
+      message: "Driver status updated successfully",
+      driver,
+    });
+  } catch (error) {
+    console.error("Error updating driver status:", error);
+    res.status(500).json({ message: "Internal server error", error: error.message });
+  }
+};
