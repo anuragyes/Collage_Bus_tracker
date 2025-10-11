@@ -75,6 +75,7 @@ export const StudentsSignUpBulk = async (req, res) => {
         email,
         password: hashedPassword,
         subscription: true, // active by default
+        phoneNumber: student.phoneNumber || null, // optional
       });
 
       const token = await genToken(newStudent._id);
@@ -221,7 +222,7 @@ export const StudentRiding = async (req, res) => {
 
 export const AllStudents = async (req, res) => {
   try {
-    const students = await Student.find().select("-password");    //select withpassword 
+    const students = await Student.find();    //select withpassword 
     res.status(200).json(students);
   }
   catch (error) {
