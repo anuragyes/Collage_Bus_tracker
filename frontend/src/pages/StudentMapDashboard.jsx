@@ -6,7 +6,7 @@ import { io } from "socket.io-client";
 import { GoogleMap, Marker, InfoWindow, useLoadScript } from "@react-google-maps/api";
 import { useNavigate, useLocation } from "react-router-dom";
 
-const SOCKET_IO_URL = "http://localhost:5000";
+const SOCKET_IO_URL = "https://collage-bus-tracker-backend.onrender.com";
 const GOOGLE_MAPS_API_KEY = "AIzaSyCGHZtNx-x6Z0jOJdc2s1O5e0_xA84mX5k";
 
 const mapContainerStyle = { width: "100%", height: "100%", borderRadius: "12px" };

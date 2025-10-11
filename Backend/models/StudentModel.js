@@ -60,4 +60,8 @@ studentSchema.index({ email: 1, subscription: 1 });
 
 const Student = mongoose.model("Student", studentSchema);
 
+<<<<<<< HEAD
 export default Student;
+=======
+export default Student;
+>>>>>>> e7f726b5c152ba518eb14a77910c101fe42d2cc9

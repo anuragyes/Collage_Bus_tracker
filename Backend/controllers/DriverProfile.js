@@ -172,7 +172,10 @@ export const DriverLogin = async (req, res) => {
   }
 };
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> e7f726b5c152ba518eb14a77910c101fe42d2cc9
 export const logoutDriver = async (req, res) => {
   try {
     const { busNumber } = req.body;
@@ -187,6 +190,7 @@ export const logoutDriver = async (req, res) => {
     // 1️⃣ Update the Bus model: mark as unassigned
     const bus = await Bus.findOneAndUpdate(
       { busNumber },
+<<<<<<< HEAD
       {
         $set: {
           driverName: "Unknown",
@@ -194,6 +198,9 @@ export const logoutDriver = async (req, res) => {
           driver: null
         }
       },
+=======
+      { $set: { isAssigned: false, driver: null } },
+>>>>>>> e7f726b5c152ba518eb14a77910c101fe42d2cc9
       { new: true }
     );
 
@@ -359,6 +366,7 @@ export const updateDriverBusAssignment = async (req, res) => {
     res.status(500).json({ message: "Internal server error", error: error.message });
   }
 };
+<<<<<<< HEAD
 
 
 
@@ -414,3 +422,5 @@ export const updateDriverBusAssignment = async (req, res) => {
     res.status(500).json({ message: "Something went wrong!" });
   }
   }
+=======
+>>>>>>> e7f726b5c152ba518eb14a77910c101fe42d2cc9

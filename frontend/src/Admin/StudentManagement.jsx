@@ -20,8 +20,18 @@ const StudentManagement = () => {
     const fetchStudents = async () => {
       setLoading(true);
       try {
+<<<<<<< HEAD
         const res = await axios.get("http://localhost:5000/api/student/allstudents");
         setStudents(res.data);
+=======
+        const response = await axios.get('https://collage-bus-tracker-backend.onrender.com/api/student/allstudents');
+
+        console.log(response.data[0]);
+        console.log(response.data.phoneNumber);
+        setStudents(response.data);
+
+        setLoading(false);
+>>>>>>> e7f726b5c152ba518eb14a77910c101fe42d2cc9
       } catch (error) {
         console.error("Error fetching students:", error.message);
         toast.error("Failed to fetch students");
@@ -69,13 +79,19 @@ const StudentManagement = () => {
           </span>
         </h1>
         <button
+<<<<<<< HEAD
           onClick={() => setShowModal(true)}
           className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg w-full sm:w-auto shadow-md"
+=======
+          onClick={() => toast.error('Feature coming soon!')}
+          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg w-full sm:w-auto"
+>>>>>>> e7f726b5c152ba518eb14a77910c101fe42d2cc9
         >
           Add Student
         </button>
       </div>
 
+<<<<<<< HEAD
       {/* ✅ Student List (Desktop Table) */}
       <div className="bg-white rounded-lg shadow overflow-x-auto mt-6 border border-gray-100">
         <table className="min-w-full text-sm text-gray-700">
@@ -118,6 +134,105 @@ const StudentManagement = () => {
             ))}
           </tbody>
         </table>
+=======
+      {/* Mobile + Tablet Cards View */}
+      <div className="space-y-4 lg:hidden">
+        {students.map((student) => (
+          <div key={student.id} className="bg-white rounded-lg shadow p-4">
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="text-lg font-semibold text-gray-800">{student.name}</h3>
+
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-gray-600">
+
+              <div>
+                <span className="font-medium">Contact:</span> {student.phoneNumber || 'N/A'}
+              </div>
+              <div>
+                <span className="font-medium">Email:</span> {student.email}
+              </div>
+              <div className="flex items-center space-x-2">
+                <span className="font-medium">Subscription:</span>
+                <span
+                  className={`px-2 py-1 rounded-full text-xs font-semibold ${student.subscription ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                    }`}
+                >
+                  {student.subscription ? 'Yes' : 'No'}
+                </span>
+              </div>
+
+
+              <div>
+                <span className="font-medium">Joining Date:</span> {
+                  new Date(student.createdAt).toLocaleString("en-US", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: true
+                  })
+                }
+              </div>
+
+              <div>
+                <span className="font-medium">Password:</span> pass1234
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="hidden lg:block bg-white rounded-lg shadow overflow-hidden mt-6">
+        <div className="overflow-x-auto">
+          <table className="min-w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Subscription</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Contact</th>
+
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">joining Date</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Password</th>
+
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {students.map((student) => (
+                <tr key={student.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap">{student.name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-semibold ${student.subscription ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                        }`}
+                    >
+                      {student.subscription ? 'Yes' : 'No'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">{student.email}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{student.phoneNumber}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    {/* this is the way to covert the date  */}
+                    {new Date(student.createdAt).toLocaleString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: true
+                    })}
+                  </td>     
+
+                  <td className="px-6 py-4 whitespace-nowrap">student123</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+>>>>>>> e7f726b5c152ba518eb14a77910c101fe42d2cc9
       </div>
 
       {/* ✅ Add Student Modal */}
