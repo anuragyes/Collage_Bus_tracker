@@ -4,7 +4,6 @@ const driverProfileSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
-<<<<<<< HEAD
 
     phoneNumber: {
       type: String,
@@ -19,9 +18,6 @@ const driverProfileSchema = new mongoose.Schema(
       },
     },
 
-=======
-    phoneNumber: { type: String },
->>>>>>> e7f726b5c152ba518eb14a77910c101fe42d2cc9
     password: { type: String, required: true },
     busNumber: { type: String, default: null },
     isAssigned: { type: Boolean, default: false },
