@@ -22,7 +22,7 @@ const DriverManagement = () => {
     const fetchDrivers = async () => {
       try {
         const response = await axios.get('https://collage-bus-tracker-backend.onrender.com/api/driverprofile/Alldriver');
-        // console.log(response.data[0]);
+        console.log(response.data[0]);
         setDrivers(response.data);
       } catch (error) {
         console.error('Error fetching drivers:', error);
@@ -39,7 +39,7 @@ const DriverManagement = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post('http://localhost:5000/api/driverprofile/create', formData);
+      const res = await axios.post('https://collage-bus-tracker-backend.onrender.com/api/driverprofile/create', formData);
       toast.success('Driver added!');
       setDrivers(prev => [...prev, res.data]);
       setShowModal(false);
@@ -53,7 +53,7 @@ const DriverManagement = () => {
   // ✅ Delete driver
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/driverprofile/delete/${id}`);
+      await axios.delete(`https://collage-bus-tracker-backend.onrender.com/api/driverprofile/delete/${id}`);
       toast.success('Driver deleted');
       setDrivers(drivers.filter(d => d._id !== id));
     } catch (error) {
@@ -75,7 +75,7 @@ const DriverManagement = () => {
           </span>
         </h1>
         <button
-          onClick={() => 
+          onClick={() =>
             toast.error('Feature coming soon!')
           }
           className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg w-full sm:w-auto"
@@ -100,7 +100,8 @@ const DriverManagement = () => {
 
               </div>
               <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
-                <div><span className="font-medium">Assigned Bus:</span> {driver.bus || 'N/A'}</div>
+                <div><span className="font-medium">Assigned Bus:</span> {driver.
+                  busNumber || 'N/A'}</div>
                 <div className="flex items-center space-x-2">
                   <span className="font-medium">Is Driving:</span>
                   <span className={`text-white px-2 py-1 rounded text-xs ${driver.isDriving ? 'bg-green-600' : 'bg-red-500'}`}>
@@ -108,7 +109,21 @@ const DriverManagement = () => {
                   </span>
                 </div>
 
-                <div><span className="font-medium">Joining Date:</span> {driver.createdAt }</div>
+                <div>
+                  <span className="font-medium">Joining Date:</span>
+
+                  {new Date(driver.createdAt).toLocaleString("en-US", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: true
+                  })}
+                </div>
+
+                <div><span className="font-medium">Password:</span>password123</div>
+
 
               </div>
             </div>
@@ -124,10 +139,14 @@ const DriverManagement = () => {
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Contact</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Assigned Bus</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">BusNumber</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Is Driving</th>
-
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Joining Date</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Password</th>
+
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Email
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -136,7 +155,10 @@ const DriverManagement = () => {
                   <td className="px-6 py-4 whitespace-nowrap">{driver.name}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{driver.phoneNumber
                   }</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{driver.bus || 'N/A'}</td>
+
+
+                  <td className="px-6 py-4 whitespace-nowrap">{driver.
+                    busNumber || 'N/A'}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 py-1 rounded text-white text-xs ${driver.isDriving ? 'bg-green-600' : 'bg-red-600'}`}>
                       {driver.isDriving ? 'Yes' : 'No'}
@@ -144,10 +166,21 @@ const DriverManagement = () => {
                   </td>
 
 
-                   <td className="px-6   py-4 whitespace-nowrap">{driver.
-                      createdAt
+                  <td className="px-6   py-4 whitespace-nowrap">{new Date(driver.
+                    createdAt).toDateString("en-Us", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: true
+                    })
 
-                    }</td>
+                  }</td>
+
+                  <td className="px-6 py-4 whitespace-nowrap">password123</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{driver.email}</td>
+
 
 
                 </tr>
