@@ -220,7 +220,7 @@ io.on("connection", (socket) => {
     }
   });
 
-  
+
 
   // DISCONNECT HANDLER
   socket.on("disconnect", (reason) => {
@@ -250,7 +250,7 @@ app.use("/api/authclient", AuthRouter)
 app.use("/api/bus", router);
 
 app.use("/api/student", StudentRide);
-app.use('/api/driverprofile',Driverrouter)
+app.use('/api/driverprofile', Driverrouter)
 
 
 app.use("/api/adminDriverProfile", ProfileDriver);

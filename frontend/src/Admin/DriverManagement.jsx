@@ -100,7 +100,8 @@ const DriverManagement = () => {
 
               </div>
               <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
-                <div><span className="font-medium">Assigned Bus:</span> {driver.bus || 'N/A'}</div>
+                <div><span className="font-medium">Assigned Bus:</span> {driver.
+                  busNumber || 'N/A'}</div>
                 <div className="flex items-center space-x-2">
                   <span className="font-medium">Is Driving:</span>
                   <span className={`text-white px-2 py-1 rounded text-xs ${driver.isDriving ? 'bg-green-600' : 'bg-red-500'}`}>
@@ -138,7 +139,7 @@ const DriverManagement = () => {
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Contact</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Assigned Bus</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">BusNumber</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Is Driving</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Joining Date</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Password</th>
@@ -156,7 +157,8 @@ const DriverManagement = () => {
                   }</td>
 
 
-                  <td className="px-6 py-4 whitespace-nowrap">{driver.bus || 'N/A'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{driver.
+                    busNumber || 'N/A'}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 py-1 rounded text-white text-xs ${driver.isDriving ? 'bg-green-600' : 'bg-red-600'}`}>
                       {driver.isDriving ? 'Yes' : 'No'}
@@ -177,7 +179,7 @@ const DriverManagement = () => {
                   }</td>
 
                   <td className="px-6 py-4 whitespace-nowrap">password123</td>
-                   <td className="px-6 py-4 whitespace-nowrap">{driver.email}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{driver.email}</td>
 
 
 

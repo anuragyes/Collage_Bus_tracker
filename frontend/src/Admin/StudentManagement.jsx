@@ -37,7 +37,9 @@ const StudentManagement = () => {
         const response = await axios.get('http://localhost:5000/api/student/allstudents');
 
         console.log(response.data[0]);
+        console.log(response.data.phoneNumber);
         setStudents(response.data);
+
         setLoading(false);
       } catch (error) {
         console.log({ error: error.message });
@@ -78,7 +80,7 @@ const StudentManagement = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-gray-600">
 
               <div>
-                <span className="font-medium">Contact:</span> 987541255
+                <span className="font-medium">Contact:</span> {student.phoneNumber || 'N/A'}
               </div>
               <div>
                 <span className="font-medium">Email:</span> {student.email}
@@ -96,7 +98,7 @@ const StudentManagement = () => {
 
               <div>
                 <span className="font-medium">Joining Date:</span> {
-                  new Date(student.createdAt).toLocaleString("en-US", { 
+                  new Date(student.createdAt).toLocaleString("en-US", {
                     year: "numeric",
                     month: "long",
                     day: "numeric",
@@ -144,9 +146,9 @@ const StudentManagement = () => {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">{student.email}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">986574112</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{student.phoneNumber}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                     {/* this is the way to covert the date  */}
+                    {/* this is the way to covert the date  */}
                     {new Date(student.createdAt).toLocaleString("en-US", {
                       year: "numeric",
                       month: "long",
@@ -157,7 +159,7 @@ const StudentManagement = () => {
                     })}
                   </td>
 
-                  <td className="px-6 py-4 whitespace-nowrap">pass1234</td>
+                  <td className="px-6 py-4 whitespace-nowrap">student123</td>
                 </tr>
               ))}
             </tbody>
