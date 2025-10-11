@@ -20,18 +20,8 @@ const StudentManagement = () => {
     const fetchStudents = async () => {
       setLoading(true);
       try {
-<<<<<<< HEAD
-        const res = await axios.get("http://localhost:5000/api/student/allstudents");
+        const res = await axios.get("https://collage-bus-tracker-backend.onrender.com/api/student/allstudents");
         setStudents(res.data);
-=======
-        const response = await axios.get('https://collage-bus-tracker-backend.onrender.com/api/student/allstudents');
-
-        console.log(response.data[0]);
-        console.log(response.data.phoneNumber);
-        setStudents(response.data);
-
-        setLoading(false);
->>>>>>> e7f726b5c152ba518eb14a77910c101fe42d2cc9
       } catch (error) {
         console.error("Error fetching students:", error.message);
         toast.error("Failed to fetch students");
@@ -42,15 +32,13 @@ const StudentManagement = () => {
     fetchStudents();
   }, []);
 
-  // ✅ Add student (signup)
+  // ✅ Add student
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
-      const res = await axios.post("http://localhost:5000/api/student/signupstudent", formData);
-
+      const res = await axios.post("https://collage-bus-tracker-backend.onrender.com/api/student/signupstudent", formData);
       toast.success("Student added successfully!");
-      setStudents((prev) => [...prev, res.data.student]); // ✅ Add to list
+      setStudents((prev) => [...prev, res.data.student]);
       setShowModal(false);
       setFormData({
         name: "",
@@ -65,10 +53,11 @@ const StudentManagement = () => {
     }
   };
 
-  if (loading) return <p className="text-center mt-8 text-gray-600">Loading Student List...</p>;
+  if (loading)
+    return <p className="text-center mt-8 text-gray-600">Loading Student List...</p>;
 
   return (
-    <div className="p-4 sm:p-6 md:p-8">
+    <div className="p-4 sm:p-6 md:p-8 bg-gray-50 min-h-screen">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <h1 className="text-2xl sm:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-pink-500">
@@ -79,21 +68,15 @@ const StudentManagement = () => {
           </span>
         </h1>
         <button
-<<<<<<< HEAD
           onClick={() => setShowModal(true)}
-          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg w-full sm:w-auto shadow-md"
-=======
-          onClick={() => toast.error('Feature coming soon!')}
-          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg w-full sm:w-auto"
->>>>>>> e7f726b5c152ba518eb14a77910c101fe42d2cc9
+          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg w-full sm:w-auto shadow-md transition"
         >
           Add Student
         </button>
       </div>
 
-<<<<<<< HEAD
-      {/* ✅ Student List (Desktop Table) */}
-      <div className="bg-white rounded-lg shadow overflow-x-auto mt-6 border border-gray-100">
+      {/* ✅ Desktop Table */}
+      <div className="hidden md:block bg-white rounded-lg shadow overflow-x-auto border border-gray-100">
         <table className="min-w-full text-sm text-gray-700">
           <thead className="bg-gray-50 text-xs uppercase font-semibold text-gray-500">
             <tr>
@@ -107,7 +90,7 @@ const StudentManagement = () => {
           </thead>
           <tbody className="divide-y divide-gray-200">
             {students.map((student) => (
-              <tr key={student._id || student.id} className="hover:bg-gray-50">
+              <tr key={student._id || student.id} className="hover:bg-gray-50 transition">
                 <td className="px-6 py-4">{student.name}</td>
                 <td className="px-6 py-4">
                   <span
@@ -120,7 +103,7 @@ const StudentManagement = () => {
                     {student.subscription ? "Yes" : "No"}
                   </span>
                 </td>
-                <td className="px-6 py-4">{student.email}</td>
+                <td className="px-6 py-4 break-all">{student.email}</td>
                 <td className="px-6 py-4">{student.phoneNumber}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                   {new Date(student.createdAt).toLocaleDateString("en-US", {
@@ -134,132 +117,73 @@ const StudentManagement = () => {
             ))}
           </tbody>
         </table>
-=======
-      {/* Mobile + Tablet Cards View */}
-      <div className="space-y-4 lg:hidden">
-        {students.map((student) => (
-          <div key={student.id} className="bg-white rounded-lg shadow p-4">
-            <div className="flex justify-between items-center mb-3">
-              <h3 className="text-lg font-semibold text-gray-800">{student.name}</h3>
-
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-gray-600">
-
-              <div>
-                <span className="font-medium">Contact:</span> {student.phoneNumber || 'N/A'}
-              </div>
-              <div>
-                <span className="font-medium">Email:</span> {student.email}
-              </div>
-              <div className="flex items-center space-x-2">
-                <span className="font-medium">Subscription:</span>
-                <span
-                  className={`px-2 py-1 rounded-full text-xs font-semibold ${student.subscription ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                    }`}
-                >
-                  {student.subscription ? 'Yes' : 'No'}
-                </span>
-              </div>
-
-
-              <div>
-                <span className="font-medium">Joining Date:</span> {
-                  new Date(student.createdAt).toLocaleString("en-US", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    hour12: true
-                  })
-                }
-              </div>
-
-              <div>
-                <span className="font-medium">Password:</span> pass1234
-              </div>
-            </div>
-          </div>
-        ))}
       </div>
 
-      {/* Desktop Table View */}
-      <div className="hidden lg:block bg-white rounded-lg shadow overflow-hidden mt-6">
-        <div className="overflow-x-auto">
-          <table className="min-w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Subscription</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Contact</th>
-
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">joining Date</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Password</th>
-
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {students.map((student) => (
-                <tr key={student.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">{student.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-semibold ${student.subscription ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                        }`}
-                    >
-                      {student.subscription ? 'Yes' : 'No'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">{student.email}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{student.phoneNumber}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    {/* this is the way to covert the date  */}
-                    {new Date(student.createdAt).toLocaleString("en-US", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      hour12: true
-                    })}
-                  </td>     
-
-                  <td className="px-6 py-4 whitespace-nowrap">student123</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
->>>>>>> e7f726b5c152ba518eb14a77910c101fe42d2cc9
+      {/* ✅ Mobile Card View */}
+      <div className="md:hidden grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {students.map((student) => (
+          <div
+            key={student._id || student.id}
+            className="bg-white rounded-lg shadow p-4 border border-gray-100"
+          >
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">
+              {student.name}
+            </h3>
+            <p className="text-sm text-gray-600 mb-1">
+              <strong>Email:</strong> {student.email}
+            </p>
+            <p className="text-sm text-gray-600 mb-1">
+              <strong>Phone:</strong> {student.phoneNumber}
+            </p>
+            <p className="text-sm text-gray-600 mb-1">
+              <strong>Joined:</strong>{" "}
+              {new Date(student.createdAt).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+              })}
+            </p>
+            <p className="text-sm text-gray-600 mb-2">
+              <strong>Subscription:</strong>{" "}
+              <span
+                className={`font-semibold ${
+                  student.subscription ? "text-green-600" : "text-red-600"
+                }`}
+              >
+                {student.subscription ? "Yes" : "No"}
+              </span>
+            </p>
+            <p className="text-sm text-gray-600">
+              <strong>Password:</strong> student123
+            </p>
+          </div>
+        ))}
       </div>
 
       {/* ✅ Add Student Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto shadow-lg">
+          <div className="bg-white rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto shadow-xl">
             <div className="p-6">
-              <h2 className="text-xl font-bold mb-4 text-center">Add New Student</h2>
+              <h2 className="text-xl font-bold mb-4 text-center text-gray-800">
+                Add New Student
+              </h2>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <InputField
                   label="Name"
                   value={formData.name}
                   onChange={(val) => setFormData({ ...formData, name: val })}
                 />
-
                 <InputField
                   label="Contact Number"
                   value={formData.phoneNumber}
                   onChange={(val) => setFormData({ ...formData, phoneNumber: val })}
                 />
-
                 <InputField
                   label="Email"
                   value={formData.email}
                   onChange={(val) => setFormData({ ...formData, email: val })}
                 />
-
                 <InputField
                   label="Password"
                   value={formData.password}
@@ -271,10 +195,7 @@ const StudentManagement = () => {
                     type="checkbox"
                     checked={formData.subscription}
                     onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        subscription: e.target.checked,
-                      })
+                      setFormData({ ...formData, subscription: e.target.checked })
                     }
                     className="mr-2"
                   />
@@ -308,15 +229,13 @@ const StudentManagement = () => {
 // ✅ Reusable Input Component
 const InputField = ({ label, value, onChange }) => (
   <div>
-    <label className="block text-sm font-medium text-gray-700 mb-1">
-      {label}
-    </label>
+    <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
     <input
       type="text"
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={`Enter ${label.toLowerCase()}`}
-      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
       required
     />
   </div>
