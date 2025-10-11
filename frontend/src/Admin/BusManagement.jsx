@@ -18,8 +18,11 @@ const BusManagement = () => {
   useEffect(() => {
     const fetchBuses = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/bus/allbuses");
+        const response = await axios.get("https://collage-bus-tracker-backend.onrender.com/api/bus/allbuses");
         setBuses(response.data);
+         console.log(
+          "this is the data bus data" , response
+         )
       } catch (error) {
         console.error("Error fetching buses:", error);
         toast.error("Failed to load buses");
@@ -34,7 +37,7 @@ const BusManagement = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:5000/api/bus/register", {
+      const res = await axios.post("https://collage-bus-tracker-backend.onrender.com/api/bus/register", {
         busNumber: formData.busNumber,
         capacity: Number(formData.capacity),
         route: formData.route,
