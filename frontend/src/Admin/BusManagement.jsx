@@ -159,8 +159,14 @@ const BusManagement = () => {
       </div>
 
       {/* Add Bus Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" style={{
+          backgroundImage:
+            "url('https://png.pngtree.com/background/20231030/original/pngtree-conceptual-education-background-for-returning-to-school-picture-image_5783169.jpg')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+        }}>
           <div className="bg-white rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <h2 className="text-xl font-bold mb-4">Add New Bus</h2>
