@@ -140,8 +140,14 @@ const DriverManagement = () => {
       </div>
 
       {/* Add Driver Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+     {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" style={{
+      backgroundImage:
+        "url('https://png.pngtree.com/thumb_back/fh260/background/20231008/pngtree-vibrant-small-bus-in-yellow-perfect-for-urban-and-suburban-travel-image_13598158.png')",
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+      backgroundRepeat: "no-repeat",
+    }}>
           <div className="bg-white rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto shadow-xl p-6">
             <h2 className="text-xl font-bold mb-4 text-center text-gray-800">Add New Driver</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
