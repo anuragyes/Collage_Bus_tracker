@@ -161,67 +161,77 @@ const StudentManagement = () => {
       </div>
 
       {/* ✅ Add Student Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto shadow-xl">
-            <div className="p-6">
-              <h2 className="text-xl font-bold mb-4 text-center text-gray-800">
-                Add New Student
-              </h2>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <InputField
-                  label="Name"
-                  value={formData.name}
-                  onChange={(val) => setFormData({ ...formData, name: val })}
-                />
-                <InputField
-                  label="Contact Number"
-                  value={formData.phoneNumber}
-                  onChange={(val) => setFormData({ ...formData, phoneNumber: val })}
-                />
-                <InputField
-                  label="Email"
-                  value={formData.email}
-                  onChange={(val) => setFormData({ ...formData, email: val })}
-                />
-                <InputField
-                  label="Password"
-                  value={formData.password}
-                  onChange={(val) => setFormData({ ...formData, password: val })}
-                />
+     {showModal && (
+  <div
+    className="fixed inset-0 bg-gray-900 bg-opacity-60 flex items-center justify-center p-4 z-50"
+    style={{
+      backgroundImage:
+        "url('https://png.pngtree.com/thumb_back/fh260/background/20230711/pngtree-rejoice-the-school-gates-are-open-3d-background-with-educational-supplies-image_3831095.jpg')",
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+      backgroundRepeat: "no-repeat",
+    }}
+  >
+    <div className="bg-white/90 backdrop-blur-md rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto shadow-xl">
+      <div className="p-6">
+        <h2 className="text-xl font-bold mb-4 text-center text-gray-800">
+          Add New Student
+        </h2>
 
-                <div className="flex items-center mt-4">
-                  <input
-                    type="checkbox"
-                    checked={formData.subscription}
-                    onChange={(e) =>
-                      setFormData({ ...formData, subscription: e.target.checked })
-                    }
-                    className="mr-2"
-                  />
-                  <label className="text-sm text-gray-700">Has Subscription</label>
-                </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <InputField
+            label="Name"
+            value={formData.name}
+            onChange={(val) => setFormData({ ...formData, name: val })}
+          />
+          <InputField
+            label="Contact Number"
+            value={formData.phoneNumber}
+            onChange={(val) => setFormData({ ...formData, phoneNumber: val })}
+          />
+          <InputField
+            label="Email"
+            value={formData.email}
+            onChange={(val) => setFormData({ ...formData, email: val })}
+          />
+          <InputField
+            label="Password"
+            value={formData.password}
+            onChange={(val) => setFormData({ ...formData, password: val })}
+          />
 
-                <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6">
-                  <button
-                    type="button"
-                    onClick={() => setShowModal(false)}
-                    className="px-4 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg w-full sm:w-auto"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg w-full sm:w-auto"
-                  >
-                    Add Student
-                  </button>
-                </div>
-              </form>
-            </div>
+          <div className="flex items-center mt-4">
+            <input
+              type="checkbox"
+              checked={formData.subscription}
+              onChange={(e) =>
+                setFormData({ ...formData, subscription: e.target.checked })
+              }
+              className="mr-2"
+            />
+            <label className="text-sm text-gray-700">Has Subscription</label>
           </div>
-        </div>
-      )}
+
+          <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6">
+            <button
+              type="button"
+              onClick={() => setShowModal(false)}
+              className="px-4 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg w-full sm:w-auto"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg w-full sm:w-auto"
+            >
+              Add Student
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 };
