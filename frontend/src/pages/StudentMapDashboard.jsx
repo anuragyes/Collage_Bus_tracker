@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import toast from "react-hot-toast";
 import { User, Phone, BusFront, LogOut, Navigation } from "lucide-react";
 import { io } from "socket.io-client";
@@ -14,7 +14,6 @@ const defaultCenter = { lat: 28.7041, lng: 77.1025 };
 const busIcon = { url: "https://maps.google.com/mapfiles/ms/icons/bus.png", scaledSize: { width: 32, height: 32 } };
 const userIcon = { url: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png", scaledSize: { width: 24, height: 24 } };
 
-// InfoCard Component
 const InfoCard = ({ icon: Icon, title, value, color }) => (
   <div className="bg-white p-4 rounded-xl shadow-lg border-l-4 border-l-gray-300 hover:shadow-2xl transition-all">
     <div className="flex items-center space-x-3">
@@ -78,7 +77,7 @@ const LiveMap = ({ userLocation, nearbyBuses, selectedBus, setSelectedBus }) => 
   );
 };
 
-// Distance calculator
+// distance in meters
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
   const R = 6371e3;
   const φ1 = lat1 * Math.PI / 180;
@@ -86,120 +85,284 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
   const Δφ = (lat2 - lat1) * Math.PI / 180;
   const Δλ = (lon2 - lon1) * Math.PI / 180;
   const a = Math.sin(Δφ / 2) ** 2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
 };
+
+const PROXIMITY_THRESHOLD_METERS = 2000; // adjust as you like
+const CHECK_INTERVAL_MS = 3000;
 
 const StudentMapDashboard = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const studentData = location.state?.studentData;
 
-  const [user, setUser] = useState(studentData);
+  const [user, setUser] = useState(studentData || { name: "Student", email: "student@example.com" });
   const [userLocation, setUserLocation] = useState(null);
   const [nearbyBuses, setNearbyBuses] = useState([]);
   const [selectedBus, setSelectedBus] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [isConnected, setIsConnected] = useState(false);
-  const [socket, setSocket] = useState(null);
-  const [audioAlert, setAudioAlert] = useState(null);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [lastStopTime, setLastStopTime] = useState(0);
 
+  // refs to avoid stale closures in event handlers
+  const socketRef = useRef(null);
+  const audioRef = useRef(null);
+  const userLocationRef = useRef(userLocation);
+  const nearbyBusesRef = useRef(nearbyBuses);
+  const selectedBusRef = useRef(selectedBus);
+
+  // keep refs in sync
+  useEffect(() => { userLocationRef.current = userLocation; }, [userLocation]);
+  useEffect(() => { nearbyBusesRef.current = nearbyBuses; }, [nearbyBuses]);
+  useEffect(() => { selectedBusRef.current = selectedBus; }, [selectedBus]);
+
   useEffect(() => { if (!studentData) navigate("/student-login"); }, [studentData, navigate]);
 
-  // Socket setup
+  const addNotification = (message) => {
+    const newNotif = { id: Date.now(), message, timestamp: new Date().toLocaleTimeString() };
+    setNotifications((prev) => [newNotif, ...prev]);
+    console.log("Notification:", message);
+  };
+
+  // ---------- SOCKET SETUP ----------
   useEffect(() => {
-    const newSocket = io(SOCKET_IO_URL, { withCredentials: true });
-    setSocket(newSocket);
-    newSocket.on("connect", () => setIsConnected(true));
-    newSocket.on("disconnect", () => setIsConnected(false));
-    newSocket.on("initial_bus_locations", (data) => setNearbyBuses(data.activeBuses || []));
-    newSocket.on("bus_location_update", (data) => {
-      setNearbyBuses((prev) => {
-        const idx = prev.findIndex(bus => bus.busId === data.busId);
-        const updatedBus = {
+    const sock = io(SOCKET_IO_URL, { withCredentials: true });
+    socketRef.current = sock;
+
+    sock.on("connect", () => {
+      setIsConnected(true);
+      console.log("socket connected");
+    });
+
+    sock.on("disconnect", () => {
+      setIsConnected(false);
+      console.log("socket disconnected");
+    });
+
+    sock.on("initial_bus_locations", (data) => {
+      setNearbyBuses(data.activeBuses || []);
+    });
+
+    sock.on("bus_location_update", (data) => {
+      setNearbyBuses(prev => {
+        const idx = prev.findIndex(b => b.busId === data.busId);
+        const updated = {
           busId: data.busId,
           driverName: data.driverName,
           driverPhone: data.driverPhone,
           location: { latitude: data.latitude, longitude: data.longitude },
           timestamp: data.timestamp,
         };
-        if (idx >= 0) { const copy = [...prev]; copy[idx] = updatedBus; return copy; }
-        return [...prev, updatedBus];
+        if (idx >= 0) {
+          const copy = [...prev];
+          copy[idx] = updated;
+          return copy;
+        }
+        return [...prev, updated];
       });
     });
-    newSocket.on("bus_removed", ({ busId }) => {
-      setNearbyBuses(prev => prev.filter(bus => bus.busId !== busId));
-      if (selectedBus?.busId === busId) setSelectedBus(null);
-    });
-    return () => newSocket.disconnect();
-  }, [selectedBus]);
 
-  // Watch user location
+    // driver logs out or bus removed
+    sock.on("bus_removed", ({ busId }) => {
+      setNearbyBuses(prev => prev.filter(bus => bus.busId !== busId));
+
+      // if the removed bus was the currently selected/alerting bus -> stop audio
+      if (selectedBusRef.current?.busId === busId) {
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current.currentTime = 0;
+          audioRef.current = null;
+        }
+        setIsAudioPlaying(false);
+        setSelectedBus(null);
+        setLastStopTime(Date.now());
+        addNotification(`🚌 Bus ${busId} went offline. Alerts stopped.`);
+      } else {
+        addNotification(`🚌 Bus ${busId} went offline.`);
+      }
+    });
+
+    return () => {
+      sock.disconnect();
+      socketRef.current = null;
+    };
+    // run once
+  }, []);
+
+  // ---------- GEOLOCATION ----------
   useEffect(() => {
-    if (!navigator.geolocation) return;
+    if (!navigator.geolocation) {
+      toast.error("Geolocation not supported by this browser.");
+      return;
+    }
     const watchId = navigator.geolocation.watchPosition(
-      (pos) => setUserLocation({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
-      () => toast.error("Unable to get your location."),
+      (pos) => {
+        const loc = { latitude: pos.coords.latitude, longitude: pos.coords.longitude };
+        setUserLocation(loc);
+      },
+      (err) => {
+        console.error("geo error", err);
+        toast.error("Unable to get your location.");
+      },
       { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
     );
     return () => navigator.geolocation.clearWatch(watchId);
   }, []);
 
-  // Emit student location
+  // emit student location to server when changed
   useEffect(() => {
-    if (socket && userLocation)
-      socket.emit("student_subscribe", { studentId: user.email || "student123", location: userLocation });
-  }, [socket, userLocation, user.email]);
+    if (socketRef.current && userLocation) {
+      socketRef.current.emit("student_subscribe", { studentId: user.email || "student123", location: userLocation });
+    }
+  }, [userLocation, user.email]);
 
-  const getClosestBus = () => {
-    if (!userLocation || nearbyBuses.length === 0) return null;
-    return nearbyBuses.reduce((closest, bus) => {
-      if (!bus.location) return closest;
-      const distance = calculateDistance(userLocation.latitude, userLocation.longitude, bus.location.latitude, bus.location.longitude);
-      return !closest || distance < closest.distance ? { bus, distance } : closest;
-    }, null);
-  };
-  const closestBus = getClosestBus();
-
-  // ✅ Fixed addNotification
-  const addNotification = (message) => {
-    const newNotif = { id: Date.now(), message, timestamp: new Date().toLocaleTimeString() };
-    console.log("✅ Notification:", message);
-    setNotifications((prev) => [newNotif]);
-
-  };
-
-  const handleLogout = () => { socket?.disconnect(); navigate("/"); toast.success(`Logged out successfully ${user.name}`); };
-  const clearNotification = (id) => setNotifications(prev => prev.filter(n => n.id !== id));
-
-  // Check proximity every few seconds
+  // ---------- PROXIMITY CHECKER ----------
   useEffect(() => {
-    const checkProximity = () => {
-      if (!closestBus || !userLocation) return;
-      const now = Date.now();
-      const twoMinPassed = now - lastStopTime > 60000; // 1 minutes  means 6000 miliSeconds
+    const checkFn = () => {
+      const uLoc = userLocationRef.current;
+      const buses = nearbyBusesRef.current;
 
-      if (closestBus.distance <= 2000 && twoMinPassed) {
-        addNotification(`🚍 Bus ${closestBus.bus.driverName} (${closestBus.bus.driverPhone}) is within ${(closestBus.distance / 1000).toFixed(2)} km!`);
+      // stop if no data
+      if (!uLoc || !buses || buses.length === 0) {
+        // if audio playing, stop it
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current.currentTime = 0;
+          audioRef.current = null;
+          setIsAudioPlaying(false);
+          setSelectedBus(null);
+          addNotification("🛑 No active buses — alert stopped.");
+        }
+        return;
+      }
 
-        if (!isAudioPlaying) {
+      // find closest bus with location
+      let closest = null;
+      let minDist = Infinity;
+      for (const b of buses) {
+        if (!b.location) continue;
+        const d = calculateDistance(uLoc.latitude, uLoc.longitude, b.location.latitude, b.location.longitude);
+        if (d < minDist) { minDist = d; closest = b; }
+      }
+
+      // if none
+      if (!closest) {
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current.currentTime = 0;
+          audioRef.current = null;
+          setIsAudioPlaying(false);
+          setSelectedBus(null);
+        }
+        return;
+      }
+
+      // If closest bus within threshold -> ensure audio playing
+      if (minDist <= PROXIMITY_THRESHOLD_METERS) {
+        // if not already playing or playing for another bus, start
+        if (!isAudioPlaying || selectedBusRef.current?.busId !== closest.busId) {
+          // stop any previous audio first
+          if (audioRef.current) {
+            audioRef.current.pause();
+            audioRef.current.currentTime = 0;
+            audioRef.current = null;
+          }
+          // start new audio
           const audio = new Audio("/mixkit-happy-bells-notification-937.wav");
           audio.loop = true;
-          audio.play().catch((err) => console.warn("Audio play blocked:", err));
-          setAudioAlert(audio);
+          audio.play().catch(err => console.warn("Audio play blocked:", err));
+          audioRef.current = audio;
           setIsAudioPlaying(true);
+          setSelectedBus(closest);
+          addNotification(`🚍 Bus ${closest.driverName || closest.busId} is nearby (${(minDist/1000).toFixed(2)} km).`);
+        }
+      } else {
+        // if far and audio is playing -> stop
+        if (isAudioPlaying && audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current.currentTime = 0;
+          audioRef.current = null;
+          setIsAudioPlaying(false);
+          setSelectedBus(null);
+          setLastStopTime(Date.now());
+          addNotification(`🛑 Bus moved away — alert stopped.`);
         }
       }
     };
 
-    const interval = setInterval(checkProximity, 5000);
+    const interval = setInterval(checkFn, CHECK_INTERVAL_MS);
     return () => clearInterval(interval);
-  }, [closestBus, userLocation, isAudioPlaying]);
+  }, [isAudioPlaying]); // isAudioPlaying included so state updates trigger effect start/stop correctly
+
+  // ---------- STOP if nearbyBuses fully empty ----------
+  useEffect(() => {
+    if (nearbyBuses.length === 0) {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+        audioRef.current = null;
+        setIsAudioPlaying(false);
+        setSelectedBus(null);
+        addNotification("🛑 All buses offline. Notification stopped.");
+      }
+    }
+  }, [nearbyBuses]);
+
+  // ---------- LOGOUT ----------
+  const handleLogout = () => {
+    // stop audio
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current = null;
+    }
+    setIsAudioPlaying(false);
+    setSelectedBus(null);
+
+    // disconnect socket
+    if (socketRef.current) {
+      socketRef.current.disconnect();
+      socketRef.current = null;
+    }
+    setIsConnected(false);
+    setNotifications([]);
+    toast.success(`Logged out successfully ${user.name}`);
+    navigate("/");
+  };
+
+  // ---------- CLEANUP on unmount ----------
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+        audioRef.current = null;
+      }
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+    };
+  }, []);
+
+  const clearNotification = (id) => setNotifications(prev => prev.filter(n => n.id !== id));
+
+  // derive closestBus for UI (non-critical)
+  const closestBus = (() => {
+    if (!userLocation || nearbyBuses.length === 0) return null;
+    let closest = null; let min = Infinity;
+    for (const b of nearbyBuses) {
+      if (!b.location) continue;
+      const d = calculateDistance(userLocation.latitude, userLocation.longitude, b.location.latitude, b.location.longitude);
+      if (d < min) { min = d; closest = { bus: b, distance: d }; }
+    }
+    return closest;
+  })();
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 sm:p-6 md:p-8">
-      {/* Header */}
       <div className="max-w-7xl mx-auto mb-6">
         <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
           <div>
@@ -211,7 +374,7 @@ const StudentMapDashboard = () => {
               {isConnected ? 'Connected' : 'Disconnected'}
             </div>
             <button onClick={() => {
-              socket?.emit("student_subscribe", { studentId: user.email, location: userLocation });
+              socketRef.current?.emit("student_subscribe", { studentId: user.email, location: userLocation });
               addNotification("Refreshing bus locations...");
             }} className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
               <Navigation className="w-4 h-4 mr-2" />Refresh
@@ -223,23 +386,18 @@ const StudentMapDashboard = () => {
         </div>
       </div>
 
-      {/* Main content */}
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Info Cards */}
         <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           <InfoCard icon={User} title="Student Name" value={user.name} color="text-blue-600" />
           <InfoCard icon={Phone} title="Email" value={user.email} color="text-yellow-600" />
           <InfoCard icon={BusFront} title="Active Buses" value={nearbyBuses.length} color="text-indigo-600" />
         </div>
 
-        {/* Map */}
         <div className="lg:col-span-2 h-[400px] sm:h-[500px]">
           <LiveMap userLocation={userLocation} nearbyBuses={nearbyBuses} selectedBus={selectedBus} setSelectedBus={setSelectedBus} />
         </div>
 
-        {/* Sidebar */}
         <div className="space-y-6">
-          {/* Closest bus */}
           <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-xl">
             <h3 className="font-semibold text-lg mb-3">Closest Bus</h3>
             {closestBus ? (
@@ -251,7 +409,6 @@ const StudentMapDashboard = () => {
             ) : <p className="text-gray-500 text-center py-4">No buses nearby</p>}
           </div>
 
-          {/* Nearby Buses List */}
           <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-xl">
             <h3 className="font-semibold text-lg mb-3">Nearby Buses</h3>
             {nearbyBuses.length > 0 ? (
@@ -267,7 +424,7 @@ const StudentMapDashboard = () => {
                   return (
                     <div
                       key={bus.busId}
-                      className="p-3 rounded-lg border-l-4 bg-gray-50 border-indigo-400 hover:bg-indigo-50 transition-all cursor-pointer"
+                      className={`p-3 rounded-lg border-l-4 bg-gray-50 border-indigo-400 hover:bg-indigo-50 transition-all cursor-pointer ${selectedBus?.busId === bus.busId ? "ring-2 ring-indigo-200" : ""}`}
                       onClick={() => setSelectedBus(bus)}
                     >
                       <div className="flex justify-between items-center">
@@ -291,8 +448,6 @@ const StudentMapDashboard = () => {
             )}
           </div>
 
-
-          {/* Notifications */}
           <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-xl">
             <div className="flex justify-between items-center mb-3">
               <h3 className="font-semibold text-lg">Notifications</h3>
@@ -316,18 +471,17 @@ const StudentMapDashboard = () => {
               )}
             </div>
 
-            {/* Stop alert button */}
             {isAudioPlaying && (
               <button
                 onClick={() => {
-                  if (audioAlert) {
-                    audioAlert.pause();
-                    audioAlert.currentTime = 0;
+                  if (audioRef.current) {
+                    audioRef.current.pause();
+                    audioRef.current.currentTime = 0;
+                    audioRef.current = null;
                   }
                   setIsAudioPlaying(false);
-                  setAudioAlert(null);
                   setLastStopTime(Date.now());
-                  addNotification("🚫 Alert stopped. Will auto-resume after 1 minutes.");
+                  addNotification("🚫 Alert stopped manually.");
                 }}
                 className="mt-3 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 w-full"
               >
@@ -342,4 +496,3 @@ const StudentMapDashboard = () => {
 };
 
 export default StudentMapDashboard;
-
