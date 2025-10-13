@@ -44,7 +44,13 @@ const StudentAccessProfile = () => {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100 font-sans p-4">
+    <div className="flex justify-center items-center min-h-screen bg-gray-100 font-sans p-4" style={{
+          backgroundImage:
+            "url('https://png.pngtree.com/background/20231030/original/pngtree-conceptual-education-background-for-returning-to-school-picture-image_5783169.jpg')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+        }}>
     
       <div className="w-full max-w-4xl min-h-[80vh] bg-gray-50 shadow-2xl rounded-2xl flex flex-col md:flex-row overflow-hidden">
 
