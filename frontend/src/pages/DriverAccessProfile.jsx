@@ -76,7 +76,13 @@ const DriverAccessProfile = () => {
     };
 
     return (
-        <div className="p-4 sm:p-8 flex justify-center items-center min-h-screen bg-gray-100 font-sans">
+        <div className="p-4 sm:p-8 flex justify-center items-center min-h-screen bg-gray-100 font-sans"   style={{
+          backgroundImage:
+            "url('https://png.pngtree.com/thumb_back/fh260/background/20231008/pngtree-vibrant-small-bus-in-yellow-perfect-for-urban-and-suburban-travel-image_13598158.png')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+        }}>
             {/* Main Container: Responsive width and shadow for desktop */}
             <div className="w-full max-w-4xl bg-white shadow-2xl rounded-2xl flex flex-col md:flex-row overflow-hidden">
                 
