@@ -23,6 +23,7 @@ export const Navbar = () => {
     { name: "About", path: "/BusComponent" },
     { name: "How it works", path: "/Work" },
     { name: "Benefits", path: "/Parent" },
+    { name: "Documentation", path: "/Doc" },
     { name: "Testimonials", path: "/Testimonials" },
     { name: "Contact", path: "/contact" },
   ];
@@ -66,11 +67,10 @@ export const Navbar = () => {
         <button
           onClick={handleLogout}
           disabled={loading}
-          className={`${baseClasses} ${gradientClasses} ${
-            isMobile
+          className={`${baseClasses} ${gradientClasses} ${isMobile
               ? "w-full py-3 cursor-pointer rounded-lg"
               : "px-5 py-2"
-          } ${loading ? "opacity-70 cursor-not-allowed" : ""}`}
+            } ${loading ? "opacity-70 cursor-not-allowed" : ""}`}
         >
           {loading ? (
             <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -82,32 +82,30 @@ export const Navbar = () => {
     } else {
       return (
         <button
-         onMouseEnter={() => setShowMsg(true)}
-        onMouseLeave={() => setShowMsg(false)}
+          onMouseEnter={() => setShowMsg(true)}
+          onMouseLeave={() => setShowMsg(false)}
           onClick={handleGetStarted}
-          className={`${baseClasses} ${gradientClasses} ${
-            isMobile
+          className={`${baseClasses} ${gradientClasses} ${isMobile
               ? "cursor-pointer w-full py-3 rounded-lg"
               : "px-5 py-2"
-          }`}
+            }`}
         >
           Get Started
         </button>
 
-       
-          
-        
+
+
+
       );
     }
   };
 
   return (
     <nav
-      className={`fixed w-full z-50 transition-all duration-300 ${
-        scrolled
+      className={`fixed w-full z-50 transition-all duration-300 ${scrolled
           ? "bg-white/90 backdrop-blur-md shadow-md"
           : "bg-transparent"
-      }`}
+        }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16 md:h-20">
@@ -131,11 +129,10 @@ export const Navbar = () => {
                 <button
                   key={item.name}
                   onClick={() => handleNavClick(item.path)}
-                  className={`px-3 xl:px-4 py-2 rounded-lg text-sm font-medium transition ${
-                    activeSection === item.path
+                  className={`px-3 xl:px-4 py-2 rounded-lg text-sm font-medium transition ${activeSection === item.path
                       ? "text-purple-600 font-semibold bg-purple-50"
                       : "text-gray-700 hover:text-purple-600 hover:bg-gray-100"
-                  }`}
+                    }`}
                 >
                   {item.name}
                 </button>
@@ -191,22 +188,20 @@ export const Navbar = () => {
 
       {/* Mobile Menu */}
       <div
-        className={`lg:hidden overflow-hidden transition-all duration-500 ease-in-out ${
-          mobileMenuOpen
+        className={`lg:hidden overflow-hidden transition-all duration-500 ease-in-out ${mobileMenuOpen
             ? "max-h-screen opacity-100 bg-white/95 cursor-pointer backdrop-blur-md border-t"
             : "max-h-0 opacity-0"
-        }`}
+          }`}
       >
         <div className="px-4 pt-2 pb-6 space-y-2">
           {navItems.map((item) => (
             <button
               key={item.name}
               onClick={() => handleNavClick(item.path)}
-              className={`block px-4 py-3 rounded-lg text-base font-medium transition ${
-                activeSection === item.path
+              className={`block px-4 py-3 rounded-lg text-base font-medium transition ${activeSection === item.path
                   ? "text-purple-600 bg-purple-50 font-semibold"
                   : "text-gray-700 hover:text-purple-600 hover:bg-gray-100"
-              }`}
+                }`}
             >
               {item.name}
             </button>
@@ -221,3 +216,7 @@ export const Navbar = () => {
     </nav>
   );
 };
+
+
+
+
