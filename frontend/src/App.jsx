@@ -23,6 +23,7 @@ import BusManagement from './Admin/BusManagement';
 import DriverManagement from './Admin/DriverManagement';
 import DashboardHome from './Admin/DashboardHome';
 import Header from './Admin/Header';
+import Documentation from './Admin/Documantation';
 
 // ✅ Admin Layout
 const AdminLayout = () => {
@@ -147,6 +148,8 @@ const PublicLayout = () => {
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/driveraccess" element={<DriverAccessPage />} />
           <Route path="/Testimonials" element={<TestimonialGrid />} />
+          <Route path="/Doc" element={<Documentation/>} />
+          
         </Routes>
         <Footer />
       </div>
