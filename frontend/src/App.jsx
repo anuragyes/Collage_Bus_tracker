@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, useLocation, useNavigate } from 'react-ro
 
 // Public pages
 import Register from './pages/Register';
+import HistoryManagement from './Admin/HistoryManagement';
 import NavbarContent from './pages/NavbarContent';
 import BusMap from './pages/BusMap';
 import StudentMapDashboard from './pages/StudentMapDashboard';
