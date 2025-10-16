@@ -18,7 +18,7 @@ const BusManagement = () => {
   useEffect(() => {
     const fetchBuses = async () => {
       try {
-        const response = await axios.get("localhost:5000/api/bus/allbuses");
+        const response = await axios.get("https://collage-bus-tracker-backend.onrender.com/api/bus/allbuses");
         setBuses(response.data);
          console.log(
           "this is the data bus data" , response
