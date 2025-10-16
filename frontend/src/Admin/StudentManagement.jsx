@@ -20,7 +20,7 @@ const StudentManagement = () => {
     const fetchStudents = async () => {
       setLoading(true);
       try {
-        const res = await axios.get("localhost:5173/api/student/allstudents");
+        const res = await axios.get("https://collage-bus-tracker-backend.onrender.com/api/student/allstudents");
         setStudents(res.data);
       } catch (error) {
         console.error("Error fetching students:", error.message);
