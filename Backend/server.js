@@ -13,6 +13,7 @@ import { AuthRouter } from "./routes/AuthClient.js";
 // import DriverProfile from "./models/DriverProfile.js"; // make sure this import exists
 import DriverProfile from "./models/AccessDriver.js";
 import Driverrouter from "./routes/DriverProfile.js";
+import Historyrouter from "./routes/HistoryRoutes.js";
 
 dotenv.config();
 
@@ -23,7 +24,7 @@ const PORT = process.env.PORT || 5000;
 // CORS setup for deployed frontend
 app.use(
   cors({
-    origin: "https://collage-bus-tracker-frontend.onrender.com",
+    origin: "http://localhost:5173",
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
   })
@@ -36,7 +37,7 @@ app.use(express.urlencoded({ extended: true }));
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "https://collage-bus-tracker-frontend.onrender.com",
+    origin: "http://localhost:5173",
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   },
@@ -254,6 +255,10 @@ app.use('/api/driverprofile', Driverrouter)
 
 
 app.use("/api/adminDriverProfile", ProfileDriver);
+
+
+  // get hostory page 
+  app.use("/api/History",Historyrouter);
 
 // Get all bus routes
 app.get("/api/bus/routes", (req, res) => {

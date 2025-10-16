@@ -36,7 +36,7 @@ const DriverManagement = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("https://collage-bus-tracker-backend.onrender.com/api/driverprofile/driversignup", formData);
+      const res = await axios.post("localhost:5000/api/driverprofile/driversignup", formData);
       toast.success("Driver added successfully!");
       setDrivers((prev) => [...prev, res.data.driver]);
       setShowModal(false);

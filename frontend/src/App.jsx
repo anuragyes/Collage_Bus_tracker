@@ -38,6 +38,7 @@ const AdminLayout = () => {
     if (path.includes('/admin/students')) return 'students';
     if (path.includes('/admin/buses')) return 'buses';
     if (path.includes('/admin/drivers')) return 'drivers';
+    if(path.includes('/admin/history'))  return 'history';
     return 'dashboard';
   };
 
@@ -51,7 +52,7 @@ const AdminLayout = () => {
   // Handle tab change with navigation
   const handleTabChange = (tabId) => {
     setActiveTab(tabId);
-    
+
     // Navigate to the corresponding route
     switch (tabId) {
       case 'dashboard':
@@ -66,6 +67,9 @@ const AdminLayout = () => {
       case 'drivers':
         navigate('/admin/drivers');
         break;
+        case 'history':
+        navigate('/admin/history');
+        break;
       default:
         navigate('/admin');
     }
@@ -75,10 +79,10 @@ const AdminLayout = () => {
     <div className="flex h-screen bg-gray-100 relative overflow-hidden">
       {/* Desktop Sidebar */}
       <div className="hidden lg:flex lg:flex-shrink-0">
-        <Sidebar 
-          activeTab={activeTab} 
-          setActiveTab={handleTabChange} 
-          setSidebarOpen={setSidebarOpen} 
+        <Sidebar
+          activeTab={activeTab}
+          setActiveTab={handleTabChange}
+          setSidebarOpen={setSidebarOpen}
         />
       </div>
 
@@ -88,20 +92,20 @@ const AdminLayout = () => {
           <div
             className="fixed inset-0"
             onClick={() =>
-               setSidebarOpen(false)
-            
-              
-              }
-               
+              setSidebarOpen(false)
+
+
+            }
+
           />
           <div className="fixed inset-y-0 left-0 w-64 bg-white shadow-md z-50 lg:hidden transition-transform duration-300 transform translate-x-0">
-            <Sidebar 
-              activeTab={activeTab} 
+            <Sidebar
+              activeTab={activeTab}
               setActiveTab={(tab) => {
                 handleTabChange(tab);
                 setSidebarOpen(false);
-              }} 
-              setSidebarOpen={setSidebarOpen} 
+              }}
+              setSidebarOpen={setSidebarOpen}
             />
           </div>
         </>
@@ -117,6 +121,7 @@ const AdminLayout = () => {
               <Route path="/students" element={<StudentManagement />} />
               <Route path="/buses" element={<BusManagement />} />
               <Route path="/drivers" element={<DriverManagement />} />
+              <Route path="/history"  element={<HistoryManagement/>}/>
               {/* Add more admin routes here */}
             </Routes>
           </div>

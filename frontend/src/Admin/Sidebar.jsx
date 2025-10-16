@@ -7,6 +7,7 @@ const Sidebar = ({ activeTab, setActiveTab, setSidebarOpen, user = { name: "Admi
     { id: 'students', label: 'Student Dashboard', icon: '👨‍🎓' },
     { id: 'buses', label: 'Bus Dashboard', icon: '🚌' },
     { id: 'drivers', label: 'Driver Dashboard', icon: '👨‍✈️' },
+    { id: 'history', label: 'History Dashboard', icon: '👨' },
   ];
 
   const handleMenuClick = (tabId) => {

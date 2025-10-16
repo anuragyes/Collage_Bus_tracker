@@ -8,7 +8,7 @@ import { io } from "socket.io-client";
 import { FaBus } from "react-icons/fa";
 import { GoogleMap, Marker, useLoadScript } from "@react-google-maps/api";
 
-const SOCKET_IO_URL = "https://collage-bus-tracker-backend.onrender.com";
+const SOCKET_IO_URL = "http://localhost:5000";
 const GOOGLE_MAPS_API_KEY = "AIzaSyCGHZtNx-x6Z0jOJdc2s1O5e0_xA84mX5k";
 
 const InfoCard = ({ icon: Icon, title, value, color }) => (
@@ -186,7 +186,7 @@ const Bus = () => {
           console.log("this is user" , user);
 
         // Call backend to update DB
-        await fetch("https://collage-bus-tracker-backend.onrender.com/api/driverprofile/driver/logout", {
+        await fetch("http://localhost:5000/api/driverprofile/driver/logout", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ busNumber: user.busNumber })

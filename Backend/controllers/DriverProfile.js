@@ -1,8 +1,9 @@
 import bcrypt from "bcrypt";
 import { genToken } from "../config/JWTToken.js";
 import Bus from "../models/Busmodel.js";
- import jwt from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import DriverProfile from "../models/AccessDriver.js";
+import History from "../models/HistoryModel.js";
 
 
 // =================== ADMIN: Add single driver ===================
@@ -102,12 +103,16 @@ export const adminAddMultipleDrivers = async (req, res) => {
   }
 };
 
+
+
 export const DriverLogin = async (req, res) => {
   try {
-    const { email, password, busNumber, phoneNumber } = req.body;
+    const { email, password, busNumber } = req.body;
 
-    if (!email || !password || !busNumber || phoneNumber)
-      return res.status(400).json({ message: "Email, password & busNumber required" });
+    if (!email || !password || !busNumber )
+      return res
+        .status(400)
+        .json({ message: "Email, password, busNumber required" });
 
     // 1️⃣ Find driver
     const driver = await DriverProfile.findOne({ email });
@@ -117,20 +122,25 @@ export const DriverLogin = async (req, res) => {
     const isMatch = await bcrypt.compare(password, driver.password);
     if (!isMatch) return res.status(400).json({ message: "Password incorrect" });
 
-    // 3️⃣ Find the bus from database
+    // 3️⃣ Find bus
     const bus = await Bus.findOne({ busNumber });
-    if (!bus) return res.status(404).json({ message: "Bus number not registered by school" });
+    if (!bus)
+      return res
+        .status(404)
+        .json({ message: "Bus number not registered by school" });
 
-    // 4️⃣ Check if bus is already assigned to another driver
+    // 4️⃣ Check if bus is already assigned
     if (bus.isAssigned && bus.driver?.toString() !== driver._id.toString()) {
-      return res.status(403).json({ message: "Bus is already assigned to another driver" });
+      return res
+        .status(403)
+        .json({ message: "Bus is already assigned to another driver" });
     }
 
     // 5️⃣ Assign bus to driver
     bus.isAssigned = true;
-    bus.driver = driver._id; // save reference
-    bus.driverName = driver.name; // ✅ save name directly
-    bus.driverPhoneNumber = driver.phoneNumber; // ✅ optional field
+    bus.driver = driver._id;
+    bus.driverName = driver.name;
+    bus.driverPhoneNumber = driver.phoneNumber;
     await bus.save();
 
     // 6️⃣ Update driver model
@@ -139,7 +149,26 @@ export const DriverLogin = async (req, res) => {
     driver.assignedBus = bus._id;
     await driver.save();
 
-    // 7️⃣ Generate token & set cookie
+    // 7️⃣ Create history record
+    const newHistory = new History({
+      driverName: driver.name,
+      email: driver.email,
+      phoneNumber: driver.phoneNumber,
+      busNumber: bus.busNumber,
+      driverActive: true,
+      busActive: true,
+      loginTime: new Date(),
+      history: [
+        {
+          status: "Login",
+          time: new Date(),
+        },
+      ],
+    });
+
+    await newHistory.save();
+
+    // 8️⃣ Generate token & send response
     const token = genToken(driver._id);
     res.cookie("token", token, {
       httpOnly: true,
@@ -148,7 +177,6 @@ export const DriverLogin = async (req, res) => {
       secure: process.env.NODE_ENV === "production",
     });
 
-    // 8️⃣ Return both driver and bus info
     res.status(200).json({
       message: "Login successful",
       driver: {
@@ -156,8 +184,8 @@ export const DriverLogin = async (req, res) => {
         name: driver.name,
         email: driver.email,
         busNumber: driver.busNumber,
-        isDriving: driver.isDriving,
         phoneNumber: driver.phoneNumber,
+        isDriving: driver.isDriving,
       },
       bus: {
         busNumber: bus.busNumber,
@@ -184,19 +212,18 @@ export const logoutDriver = async (req, res) => {
       });
     }
 
-    // 1️⃣ Update the Bus model: mark as unassigned
+    // 1️⃣ Update Bus model → mark as unassigned
     const bus = await Bus.findOneAndUpdate(
       { busNumber },
       {
         $set: {
           driverName: "Unknown",
           isAssigned: false,
-          driver: null
-        }
+          driver: null,
+        },
       },
       { new: true }
     );
-
 
     if (!bus) {
       return res.status(404).json({
@@ -205,7 +232,7 @@ export const logoutDriver = async (req, res) => {
       });
     }
 
-    // 2️⃣ Update the DriverProfile model
+    // 2️⃣ Update DriverProfile model → mark as inactive
     const driver = await DriverProfile.findOneAndUpdate(
       { busNumber }, // find driver with that bus
       {
@@ -214,7 +241,7 @@ export const logoutDriver = async (req, res) => {
           isAssigned: false,
         },
         $unset: {
-          busNumber: "", // remove the field entirely to avoid duplicate key error
+          busNumber: "", // remove the field entirely
         },
       },
       { new: true }
@@ -227,13 +254,50 @@ export const logoutDriver = async (req, res) => {
       });
     }
 
-    // 3️⃣ Clear cookie (logout)
+    // 3️⃣ Update History model → record logout event
+    const lastHistory = await History.findOne({
+      email: driver.email,
+      busNumber: busNumber,
+    }).sort({ createdAt: -1 }); // get most recent entry
+
+    if (lastHistory) {
+      lastHistory.driverActive = false;
+      lastHistory.busActive = false;
+      lastHistory.logoutTime = new Date();
+      lastHistory.history.push({
+        status: "Logout",
+        time: new Date(),
+      });
+      await lastHistory.save();
+    } else {
+      // if no login record found, create a fallback
+      const newHistory = new History({
+        driverName: driver.name,
+        email: driver.email,
+        phoneNumber: driver.phoneNumber,
+        busNumber: busNumber,
+        driverActive: false,
+        busActive: false,
+        loginTime: null,
+        logoutTime: new Date(),
+        history: [
+          {
+            status: "Logout (No login record found)",
+            time: new Date(),
+          },
+        ],
+      });
+      await newHistory.save();
+    }
+
+    // 4️⃣ Clear cookie (logout)
     res.clearCookie("token", {
       httpOnly: true,
       sameSite: "strict",
       secure: process.env.NODE_ENV === "production",
     });
 
+    // ✅ 5️⃣ Final response
     return res.json({
       success: true,
       message: "Driver logged out successfully.",
@@ -249,6 +313,7 @@ export const logoutDriver = async (req, res) => {
     });
   }
 };
+
 
 
 export const startDriverRide = async (req, res) => {
@@ -360,8 +425,8 @@ export const updateDriverBusAssignment = async (req, res) => {
   }
 };
 
-  export const driverSignup = async(req,res)=>{
- try {
+export const driverSignup = async (req, res) => {
+  try {
     const { name, email, password, phoneNumber } = req.body;
 
     // ✅ Check if student already exists
@@ -369,11 +434,11 @@ export const updateDriverBusAssignment = async (req, res) => {
     if (existingDriver) {
       return res.status(400).json({ message: "Driver already registered" });
     }
-    
 
-     if(phoneNumber<10){
-      return res.status(201).json({message:"valid phone number add"})
-     }
+
+    if (phoneNumber < 10) {
+      return res.status(201).json({ message: "valid phone number add" })
+    }
     // ✅ Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -409,5 +474,5 @@ export const updateDriverBusAssignment = async (req, res) => {
     console.error("Signup Error:", error.message);
     res.status(500).json({ message: "Something went wrong!" });
   }
-  }
+}
 

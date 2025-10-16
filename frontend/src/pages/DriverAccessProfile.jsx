@@ -1,7 +1,7 @@
 
 
 import React, { useState } from "react";
-import { useNavigate, BrowserRouter, Routes, Route } from "react-router-dom"; 
+import { useNavigate, BrowserRouter, Routes, Route } from "react-router-dom";
 import toast from "react-hot-toast";
 import { BusFront, Power, Mail, Lock, Hash } from "lucide-react";
 import axios from "axios";
@@ -9,7 +9,7 @@ import axios from "axios";
 
 
 
-const API_BASE_URL = "https://collage-bus-tracker-backend.onrender.com";
+const API_BASE_URL = "http://localhost:5000";
 const LOGIN_ENDPOINT = "/api/driverprofile/driver/login";
 
 // Custom Spinner Component for consistency and aesthetics
@@ -26,7 +26,7 @@ const DriverAccessProfile = () => {
     const [password, setPassword] = useState("");
     const [busNumber, setBusNumber] = useState("");
     const [loading, setLoading] = useState(false);
-    const navigate = useNavigate(); 
+    const navigate = useNavigate();
 
     // 🚍 Handle Driver Login
     const handleSubmit = async (e) => {
@@ -59,7 +59,7 @@ const DriverAccessProfile = () => {
             if (response.data && response.data.driver) {
                 toast.success(response.data.message);
                 // Navigating to the dashboard path
-                //  console.log("this is profile destials of driver ", response);
+                console.log("this is profile destials of driver ", response);
                 navigate("/dashboard", { state: { user: response.data.driver } });
             } else {
                 throw new Error("Server response missing driver data.");
@@ -76,16 +76,16 @@ const DriverAccessProfile = () => {
     };
 
     return (
-        <div className="p-4 sm:p-8 flex justify-center items-center min-h-screen bg-gray-100 font-sans"   style={{
-          backgroundImage:
-            "url('https://png.pngtree.com/thumb_back/fh260/background/20231008/pngtree-vibrant-small-bus-in-yellow-perfect-for-urban-and-suburban-travel-image_13598158.png')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
+        <div className="p-4 sm:p-8 flex justify-center items-center min-h-screen bg-gray-100 font-sans" style={{
+            backgroundImage:
+                "url('https://png.pngtree.com/thumb_back/fh260/background/20231008/pngtree-vibrant-small-bus-in-yellow-perfect-for-urban-and-suburban-travel-image_13598158.png')",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
         }}>
             {/* Main Container: Responsive width and shadow for desktop */}
             <div className="w-full max-w-4xl bg-white shadow-2xl rounded-2xl flex flex-col md:flex-row overflow-hidden">
-                
+
                 {/* Sidebar / Branding Section */}
                 {/* Responsive width: full width on mobile, 1/3 to 2/5 on desktop */}
                 <div className="w-full md:w-1/3 lg:w-2/5 p-8 flex flex-col justify-center items-center text-center bg-indigo-700 text-white shadow-lg">
@@ -107,9 +107,9 @@ const DriverAccessProfile = () => {
                         <p className="text-center text-sm text-gray-500 mb-8">
                             Enter details to begin tracking
                         </p>
-                        
+
                         <form onSubmit={handleSubmit} className="space-y-6">
-                            
+
                             {/* Email Field */}
                             <div>
                                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
@@ -128,7 +128,7 @@ const DriverAccessProfile = () => {
                                     />
                                 </div>
                             </div>
-                            
+
                             {/* Password Field */}
                             <div>
                                 <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
@@ -147,7 +147,7 @@ const DriverAccessProfile = () => {
                                     />
                                 </div>
                             </div>
-                            
+
                             {/* Bus Number Field */}
                             <div>
                                 <label htmlFor="busNumber" className="block text-sm font-medium text-gray-700 mb-1">Bus Number (Required)</label>
@@ -166,7 +166,7 @@ const DriverAccessProfile = () => {
                                     />
                                 </div>
                             </div>
-                            
+
                             {/* Submit Button */}
                             <button
                                 type="submit"
@@ -190,4 +190,4 @@ const DriverAccessProfile = () => {
     );
 };
 
- export default  DriverAccessProfile
+export default DriverAccessProfile
