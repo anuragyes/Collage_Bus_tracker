@@ -12,7 +12,7 @@ const HistoryManagement = () => {
     try {
       setIsLoading(true);
       setError(null);
-      const res = await axios.get("http://localhost:5000/api/History/AllHistory");
+      const res = await axios.get("https://collage-bus-tracker-backend.onrender.com/api/History/AllHistory");
       // Ensure we have an array, even if the API response structure is different
       const data = res.data?.allDetails || res.data || [];
       setHistoryData(Array.isArray(data) ? data : []);
