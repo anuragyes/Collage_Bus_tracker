@@ -244,7 +244,7 @@ const DriverDetailsPage = () => {
     useEffect(() => {
         const fetchDriver = async () => {
             try {
-                const res = await axios.get(`https://collage-bus-tracker-backend.onrender.com /api/driverprofile/admin/drivers/${driverId}`);
+                const res = await axios.get(`https://collage-bus-tracker-backend.onrender.com/api/driverprofile/admin/drivers/${driverId}`);
                 setDriver(res.data.driver);
                 setLoading(false);
                 
