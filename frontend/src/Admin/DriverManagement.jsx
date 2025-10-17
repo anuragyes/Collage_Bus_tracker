@@ -28,7 +28,7 @@ const DriverManagement = () => {
     const fetchDrivers = async () => {
       setLoading(true);
       try {
-        const res = await axios.get("https://collage-bus-tracker-backend.onrender.com /api/driverprofile/Alldriver");
+        const res = await axios.get("https://collage-bus-tracker-backend.onrender.com/api/driverprofile/Alldriver");
         setDrivers(res.data);
       } catch (error) {
         console.error(error);
