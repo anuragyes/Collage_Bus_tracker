@@ -7,7 +7,7 @@ import { io } from "socket.io-client";
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const BASE_URL = "https://collage-bus-tracker-backend.onrender.com"; // use production URL
+  const BASE_URL = "https://collage-bus-tracker-backend.onrender.com "; // use production URL
   const [currentuser, setCurrentuser] = useState(null);
   const [currentDriver, setCurrentDriver] = useState(null);
   const [driverLocations, setDriverLocations] = useState([]);

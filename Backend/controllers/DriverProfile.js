@@ -4,6 +4,153 @@ import Bus from "../models/Busmodel.js";
 import jwt from "jsonwebtoken";
 import DriverProfile from "../models/AccessDriver.js";
 import History from "../models/HistoryModel.js";
+import { v2 as cloudinary } from 'cloudinary';
+import dotenv from 'dotenv';
+import fs from "fs";
+
+
+
+
+
+// ✅ Load .env variables
+dotenv.config();
+
+// ✅ Setup Cloudinary config
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+// ✅ DEBUG: Check if Cloudinary config is loading
+console.log("Cloudinary ENV CONFIG:", {
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET ? "Loaded ✅" : "Missing ❌"
+});
+
+export const driverSignup = async (req, res) => {
+  try {
+    const { name, email, password, phoneNumber } = req.body;
+
+    // ✅ Basic field validation
+    if (!name || !email || !password || !phoneNumber) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    // ✅ Check if driver already exists
+    const existingDriver = await DriverProfile.findOne({ email });
+    if (existingDriver) {
+      return res.status(400).json({ message: "Driver already registered" });
+    }
+
+    // ✅ Validate phone number
+    if (!/^\d{10,}$/.test(phoneNumber)) {
+      return res.status(400).json({ message: "Please provide a valid phone number" });
+    }
+
+    // ✅ Validate password length
+    if (password.length < 6) {
+      return res.status(400).json({ message: "Password must be at least 6 characters long" });
+    }
+
+    // ✅ Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // ✅ Helper to upload file to Cloudinary
+    const uploadToCloudinary = async (file, documentType) => {
+      if (!file || !file.path) {
+        throw new Error(`${documentType} file is missing`);
+      }
+
+      const result = await cloudinary.uploader.upload(file.path, {
+        folder: "drivers_docs",
+        resource_type: "auto",
+        use_filename: true,
+        unique_filename: true
+      });
+
+      // ✅ Delete local file after upload
+      try {
+        fs.unlinkSync(file.path);
+      } catch (err) {
+        console.warn(`Could not delete file ${file.path}:`, err.message);
+      }
+
+      return result.secure_url;
+    };
+
+    // ✅ Upload files if provided
+    let aadhaarUrl = null, licenseUrl = null, photoUrl = null;
+
+    if (req.files) {
+      console.log("Uploaded files:", {
+        aadhaar: req.files["aadhaar"]?.[0]?.originalname,
+        license: req.files["license"]?.[0]?.originalname,
+        photo: req.files["photo"]?.[0]?.originalname
+      });
+
+      try {
+        if (req.files["aadhaar"]?.[0]) {
+          aadhaarUrl = await uploadToCloudinary(req.files["aadhaar"][0], "aadhaar");
+        }
+        if (req.files["license"]?.[0]) {
+          licenseUrl = await uploadToCloudinary(req.files["license"][0], "license");
+        }
+        if (req.files["photo"]?.[0]) {
+          photoUrl = await uploadToCloudinary(req.files["photo"][0], "photo");
+        }
+      } catch (uploadError) {
+        console.error("Cloudinary upload error:", uploadError);
+        return res.status(500).json({ message: "File upload failed. Please try again." });
+      }
+    }
+
+    // ✅ Create driver profile
+    const newDriverProfile = new DriverProfile({
+      name,
+      email,
+      password: hashedPassword,
+      phoneNumber,
+      aadhaarUrl,
+      licenseUrl,
+      photoUrl,
+    });
+
+    await newDriverProfile.save();
+
+    // ✅ Generate JWT token
+    const token = jwt.sign(
+      { id: newDriverProfile._id },
+      process.env.JWT_SECRET || "WSOUGUUTSETA",
+      { expiresIn: "7d" }
+    );
+
+    // ✅ Send success response
+    res.status(201).json({
+      message: "Signup successful",
+      token,
+      driver: {
+        id: newDriverProfile._id,
+        name: newDriverProfile.name,
+        email: newDriverProfile.email,
+        phoneNumber: newDriverProfile.phoneNumber,
+        aadhaarUrl,
+        licenseUrl,
+        photoUrl,
+        createdAt: newDriverProfile.createdAt,
+      },
+    });
+
+  } catch (error) {
+    console.error("Signup Error:", error);
+    res.status(500).json({ message: "Something went wrong!" });
+  }
+};
+
+
+
+
 
 
 // =================== ADMIN: Add single driver ===================
@@ -109,7 +256,7 @@ export const DriverLogin = async (req, res) => {
   try {
     const { email, password, busNumber } = req.body;
 
-    if (!email || !password || !busNumber )
+    if (!email || !password || !busNumber)
       return res
         .status(400)
         .json({ message: "Email, password, busNumber required" });
@@ -425,54 +572,21 @@ export const updateDriverBusAssignment = async (req, res) => {
   }
 };
 
-export const driverSignup = async (req, res) => {
+
+
+
+
+export const getdriverid = async (req, res) => {
+
   try {
-    const { name, email, password, phoneNumber } = req.body;
+    const driver = await DriverProfile.findById(req.params.id);
+    // console.log("thsi sis driver", driver)
 
-    // ✅ Check if student already exists
-    const existingDriver = await DriverProfile.findOne({ email });
-    if (existingDriver) {
-      return res.status(400).json({ message: "Driver already registered" });
-    }
+    if (!driver) return res.status(404).json({ message: "Driver not found" });
+    res.json({ driver });
 
-
-    if (phoneNumber < 10) {
-      return res.status(201).json({ message: "valid phone number add" })
-    }
-    // ✅ Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // ✅ Create new student
-    const newDriverProfile = new DriverProfile({
-      name,
-      email,
-      password: hashedPassword,
-      phoneNumber,
-    });
-
-    await newDriverProfile.save();
-
-    // ✅ Generate JWT token
-    const token = jwt.sign({ id: newDriverProfile._id }, "SECRET_KEY", {
-      expiresIn: "7d",
-    });
-
-    // ✅ Send response
-    res.status(201).json({
-      message: "Signup successful",
-      token,
-      student: {
-        id: newDriverProfile._id,
-        name: newDriverProfile.name,
-        email: newDriverProfile.email,
-        phoneNumber: newDriverProfile.phoneNumber,
-        subscription: newDriverProfile.subscription,
-        createdAt: newDriverProfile.createdAt,
-      },
-    });
   } catch (error) {
-    console.error("Signup Error:", error.message);
-    res.status(500).json({ message: "Something went wrong!" });
+    res.status(500).json({ message: "Server error" });
   }
 }
 

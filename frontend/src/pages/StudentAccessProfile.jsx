@@ -8,7 +8,7 @@ import { LogIn, User } from "lucide-react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
- const BASE_URL = "https://collage-bus-tracker-backend.onrender.com";
+ const BASE_URL = "https://collage-bus-tracker-backend.onrender.com ";
 
 const StudentAccessProfile = () => {
   const [email, setEmail] = useState("");

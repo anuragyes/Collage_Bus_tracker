@@ -20,7 +20,7 @@ const StudentManagement = () => {
     const fetchStudents = async () => {
       setLoading(true);
       try {
-        const res = await axios.get("https://collage-bus-tracker-backend.onrender.com/api/student/allstudents");
+        const res = await axios.get("https://collage-bus-tracker-backend.onrender.com /api/student/allstudents");
         setStudents(res.data);
       } catch (error) {
         console.error("Error fetching students:", error.message);
@@ -36,7 +36,7 @@ const StudentManagement = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("https://collage-bus-tracker-backend.onrender.com/api/student/signupstudent", formData);
+      const res = await axios.post("https://collage-bus-tracker-backend.onrender.com /api/student/signupstudent", formData);
       toast.success("Student added successfully!");
       setStudents((prev) => [...prev, res.data.student]);
       setShowModal(false);

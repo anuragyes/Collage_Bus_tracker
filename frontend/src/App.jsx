@@ -25,6 +25,7 @@ import DriverManagement from './Admin/DriverManagement';
 import DashboardHome from './Admin/DashboardHome';
 import Header from './Admin/Header';
 import Documentation from './Admin/Documantation';
+import DriverDetailsPage from './Admin/DriverDetailspage';
 
 // ✅ Admin Layout
 const AdminLayout = () => {
@@ -123,6 +124,7 @@ const AdminLayout = () => {
               <Route path="/buses" element={<BusManagement />} />
               <Route path="/drivers" element={<DriverManagement />} />
               <Route path="/history"  element={<HistoryManagement/>}/>
+              <Route path="/drivers/:driverId" element={<DriverDetailsPage/>} />
               {/* Add more admin routes here */}
             </Routes>
           </div>
@@ -179,3 +181,21 @@ const App = () => {
 };
 
 export default App;
+
+//  import React from 'react'
+// import DriverSignupForm from './form'
+  
+//   const App = () => {
+//     return (
+//      <>
+     
+//     <DriverSignupForm/>
+      
+     
+//      </>
+//     )
+//   }
+  
+//   export default App
+
+

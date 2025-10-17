@@ -13,7 +13,7 @@ const HistoryManagement = () => {
     try {
       setIsLoading(true);
       setError(null);
-      const res = await axios.get("https://collage-bus-tracker-backend.onrender.com/api/History/AllHistory");
+      const res = await axios.get("https://collage-bus-tracker-backend.onrender.com /api/History/AllHistory");
       const data = res.data?.allDetails || res.data || [];
       setHistoryData(Array.isArray(data) ? data : []);
     } catch (err) {
