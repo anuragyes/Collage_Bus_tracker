@@ -22,6 +22,9 @@ const driverProfileSchema = new mongoose.Schema(
     busNumber: { type: String, default: null },
     isAssigned: { type: Boolean, default: false },
     isDriving: { type: Boolean, default: false },
+    aadhaarUrl: String,
+    licenseUrl: String,
+    photoUrl: String,
   },
   { timestamps: true }
 );
