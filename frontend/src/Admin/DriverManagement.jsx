@@ -72,7 +72,7 @@ const handleFileChange = (fileType, selectedFile) => {
       Object.keys(files).forEach((key) => files[key] && submitData.append(key, files[key]));
 
       const res = await axios.post(
-        "https://collage-bus-tracker-backend.onrender.com /api/driverprofile/driversignup",
+        "https://collage-bus-tracker-backend.onrender.com/api/driverprofile/driversignup",
         submitData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
