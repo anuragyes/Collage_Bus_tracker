@@ -202,30 +202,34 @@ const handleFileChange = (fileType, selectedFile) => {
       </div>
 
       {/* Mobile View */}
-      <div className="md:hidden grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
-        {drivers.map((driver) => (
-          <div key={driver._id} className="bg-white rounded-xl shadow-md p-5 border border-gray-200">
-            <h3 className="text-lg font-bold text-blue-600 mb-2">{driver.name}</h3>
-            <p className="text-sm text-gray-600 mb-1"><strong>Email:</strong> {driver.email}</p>
-            <p className="text-sm text-gray-600 mb-1"><strong>Phone:</strong> {driver.phoneNumber}</p>
-            <p className="text-sm text-gray-600 mb-1"><strong>Bus:</strong> {driver.busNumber || "N/A"}</p>
-            <p className="text-sm text-gray-600 mb-1">
-              <strong>Driving:</strong>{" "}
-              <span className={`${driver.isDriving ? "text-green-600" : "text-red-600"} font-semibold`}>
-                {driver.isDriving ? "Yes" : "No"}
-              </span>
-            </p>
-            <p className="text-sm text-gray-600 mb-2">
-              <strong>Joined:</strong>{" "}
-              {new Date(driver.createdAt).toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "short",
-                day: "numeric",
-              })}
-            </p>
-          </div>
-        ))}
-      </div>
+     <div className="md:hidden grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+  {drivers.map((driver) => (
+    <Link
+      key={driver._id}
+      to={`/admin/drivers/${driver._id}`}
+      className="block bg-white rounded-xl shadow-md p-5 border border-gray-200 hover:bg-blue-50 transition"
+    >
+      <h3 className="text-lg font-bold text-blue-600 mb-2">{driver.name}</h3>
+      <p className="text-sm text-gray-600 mb-1"><strong>Email:</strong> {driver.email}</p>
+      <p className="text-sm text-gray-600 mb-1"><strong>Phone:</strong> {driver.phoneNumber}</p>
+      <p className="text-sm text-gray-600 mb-1"><strong>Bus:</strong> {driver.busNumber || "N/A"}</p>
+      <p className="text-sm text-gray-600 mb-1">
+        <strong>Driving:</strong>{" "}
+        <span className={`${driver.isDriving ? "text-green-600" : "text-red-600"} font-semibold`}>
+          {driver.isDriving ? "Yes" : "No"}
+        </span>
+      </p>
+      <p className="text-sm text-gray-600 mb-2">
+        <strong>Joined:</strong>{" "}
+        {new Date(driver.createdAt).toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        })}
+      </p>
+    </Link>
+  ))}
+</div>
 
      
        {showModal && (
