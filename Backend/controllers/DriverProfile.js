@@ -27,12 +27,7 @@ cloudinary.config({
   api_secret: "GvPlkvzLX4P8zFwZRwOQV3laY64"
 });
 
-// ✅ DEBUG: Check if Cloudinary config is loading
-console.log("Cloudinary ENV CONFIG:", {
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET ? "Loaded ✅" : "Missing ❌"
-});
+
 
 export const driverSignup = async (req, res) => {
   try {
