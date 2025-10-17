@@ -16,10 +16,15 @@ import fs from "fs";
 dotenv.config();
 
 // ✅ Setup Cloudinary config
+// cloudinary.config({
+//   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+//   api_key: process.env.CLOUDINARY_API_KEY,
+//   api_secret: process.env.CLOUDINARY_API_SECRET
+// });
 cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET
+  cloud_name: "dqivfw8wq",
+  api_key: "892154517514648",
+  api_secret: "GvPlkvzLX4P8zFwZRwOQV3laY64"
 });
 
 // ✅ DEBUG: Check if Cloudinary config is loading
