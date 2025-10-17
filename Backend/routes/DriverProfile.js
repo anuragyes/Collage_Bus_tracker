@@ -3,7 +3,7 @@
 import express from "express";
 import { isAuth } from "../Middleware/IsAuth.js";
 // import { adminAddMultipleDrivers, adminDriver, startDriverRide } from "../controllers/DriverController.js";
-import { adminAddMultipleDrivers, adminDriver, DriverLogin, driverSignup, getAllDriverDetails, logoutDriver, startDriverRide, updateDriverBusAssignment } from "../controllers/DriverProfile.js"
+import { adminAddMultipleDrivers,  getdriverid ,  adminDriver, DriverLogin, driverSignup, getAllDriverDetails, logoutDriver, startDriverRide, updateDriverBusAssignment } from "../controllers/DriverProfile.js"
 
 const Driverrouter = express.Router();
 
@@ -19,6 +19,9 @@ Driverrouter.get("/Alldriver", getAllDriverDetails)
 
 //  update the bus number assigned where driver used any bus 
 Driverrouter.post("/driver/update-bus", updateDriverBusAssignment);
+
+// GET single driver
+Driverrouter.get("/admin/drivers/:id" , getdriverid);
 
 
 
