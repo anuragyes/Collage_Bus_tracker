@@ -95,7 +95,7 @@ const TestimonialGrid = () => {
     <>
     
       <div className="bg-[#0b0c16] text-white py-16 pt-20 px-4 font-sans rounded-2xl text-center">
-      <h3 className="text-indigo-400 text-base font-medium mb-1">Testimonials</h3>
+
       <h2 className="text-white text-4xl sm:text-5xl font-bold mb-10">We have worked with thousands of amazing people</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl mx-auto">
         {testimonials.map((testimonial, index) => (
