@@ -75,7 +75,7 @@ export const Navbar = () => {
           {loading ? (
             <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
           ) : (
-            "Logout"
+             <h2>{currentuser.name[0].toUpperCase()}</h2>
           )}
         </button>
       );
@@ -92,10 +92,6 @@ export const Navbar = () => {
         >
           Get Started
         </button>
-
-
-
-
       );
     }
   };
