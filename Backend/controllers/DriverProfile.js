@@ -29,131 +29,29 @@ cloudinary.config({
 
 
 
-// export const driverSignup = async (req, res) => {
-//   try {
-//     const { name, email, password, phoneNumber } = req.body;
-
-//     // ✅ Basic field validation
-//     if (!name || !email || !password || !phoneNumber) {
-//       return res.status(400).json({ message: "All fields are required" });
-//     }
-
-//     // ✅ Check if driver already exists
-//     const existingDriver = await DriverProfile.findOne({ email });
-//     if (existingDriver) {
-//       return res.status(400).json({ message: "Driver already registered" });
-//     }
-
-//     // ✅ Validate phone number
-//     if (!/^\d{10,}$/.test(phoneNumber)) {
-//       return res.status(400).json({ message: "Please provide a valid phone number" });
-//     }
-
-//     // ✅ Validate password length
-//     if (password.length < 6) {
-//       return res.status(400).json({ message: "Password must be at least 6 characters long" });
-//     }
-
-//     // ✅ Hash the password
-//     const hashedPassword = await bcrypt.hash(password, 10);
-
-//     // ✅ Helper to upload file to Cloudinary
-//     const uploadToCloudinary = async (file, documentType) => {
-//       if (!file || !file.path) {
-//         throw new Error(`${documentType} file is missing`);
-//       }
-
-//       const result = await cloudinary.uploader.upload(file.path, {
-//         folder: "drivers_docs",
-//         resource_type: "auto",
-//         use_filename: true,
-//         unique_filename: true
-//       });
-
-//       // ✅ Delete local file after upload
-//       try {
-//         fs.unlinkSync(file.path);
-//       } catch (err) {
-//         console.warn(`Could not delete file ${file.path}:`, err.message);
-//       }
-
-//       return result.secure_url;
-//     };
-
-//     // ✅ Upload files if provided
-//     let aadhaarUrl = null, licenseUrl = null, photoUrl = null;
-
-//     if (req.files) {
-//       console.log("Uploaded files:", {
-//         aadhaar: req.files["aadhaar"]?.[0]?.originalname,
-//         license: req.files["license"]?.[0]?.originalname,
-//         photo: req.files["photo"]?.[0]?.originalname
-//       });
-
-//       try {
-//         if (req.files["aadhaar"]?.[0]) {
-//           aadhaarUrl = await uploadToCloudinary(req.files["aadhaar"][0], "aadhaar");
-//         }
-//         if (req.files["license"]?.[0]) {
-//           licenseUrl = await uploadToCloudinary(req.files["license"][0], "license");
-//         }
-//         if (req.files["photo"]?.[0]) {
-//           photoUrl = await uploadToCloudinary(req.files["photo"][0], "photo");
-//         }
-//       } catch (uploadError) {
-//         console.error("Cloudinary upload error:", uploadError);
-//         return res.status(500).json({ message: "File upload failed. Please try again." });
-//       }
-//     }
-
-//     // ✅ Create driver profile
-//     const newDriverProfile = new DriverProfile({
-//       name,
-//       email,
-//       password: hashedPassword,
-//       phoneNumber,
-//       aadhaarUrl,
-//       licenseUrl,
-//       photoUrl,
-//     });
-
-//     await newDriverProfile.save();
-
-//     // ✅ Generate JWT token
-//     const token = jwt.sign(
-//       { id: newDriverProfile._id },
-//       process.env.JWT_SECRET || "WSOUGUUTSETA",
-//       { expiresIn: "7d" }
-//     );
-
-//     // ✅ Send success response
-//     res.status(201).json({
-//       message: "Signup successful",
-//       token,
-//       driver: {
-//         id: newDriverProfile._id,
-//         name: newDriverProfile.name,
-//         email: newDriverProfile.email,
-//         phoneNumber: newDriverProfile.phoneNumber,
-//         aadhaarUrl,
-//         licenseUrl,
-//         photoUrl,
-//         createdAt: newDriverProfile.createdAt,
-//       },
-//     });
-
-//   } catch (error) {
-//     console.error("Signup Error:", error);
-//     res.status(500).json({ message: "Something went wrong!" });
-//   }
-// };
 export const driverSignup = async (req, res) => {
   try {
-    const { name, email, password, phoneNumber } = req.body;
+    const {
+      name,
+      email,
+      password,
+      phoneNumber,
+      aadhaarNumber,
+      dateOfBirth,
+      bloodGroup,
+      licenseNumber,
+      address
+    } = req.body;
 
-    // ✅ Basic field validation
-    if (!name || !email || !password || !phoneNumber) {
+    // ✅ Required Fields
+    if (!name || !email || !password || !phoneNumber || !aadhaarNumber || !licenseNumber || !dateOfBirth) {
       return res.status(400).json({ message: "All fields are required" });
+    }
+
+    // ✅ Validate dateOfBirth
+    const parsedDOB = new Date(dateOfBirth);
+    if (isNaN(parsedDOB.getTime())) {
+      return res.status(400).json({ message: "Please provide a valid date of birth" });
     }
 
     // ✅ Check if driver already exists
@@ -162,17 +60,28 @@ export const driverSignup = async (req, res) => {
       return res.status(400).json({ message: "Driver already registered" });
     }
 
-    // ✅ Validate phone number
+    // ✅ Phone validation
     if (!/^\d{10,}$/.test(phoneNumber)) {
       return res.status(400).json({ message: "Please provide a valid phone number" });
     }
 
-    // ✅ Validate password length
+    // ✅ Aadhaar validation
+    if (!/^\d{12}$/.test(aadhaarNumber)) {
+      return res.status(400).json({ message: "Please provide a valid 12-digit Aadhaar number" });
+    }
+
+    // ✅ Password strength
     if (password.length < 6) {
       return res.status(400).json({ message: "Password must be at least 6 characters long" });
     }
 
-    // ✅ Validate required document uploads
+    // ✅ Blood group validation
+    const validBloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+    if (!validBloodGroups.includes(bloodGroup)) {
+      return res.status(400).json({ message: "Invalid blood group" });
+    }
+
+    // ✅ Document upload check
     if (
       !req.files ||
       !req.files["aadhaar"]?.[0] ||
@@ -187,20 +96,15 @@ export const driverSignup = async (req, res) => {
     // ✅ Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // ✅ Helper to upload file to Cloudinary
-    const uploadToCloudinary = async (file, documentType) => {
-      if (!file || !file.path) {
-        throw new Error(`${documentType} file is missing`);
-      }
-
+    // ✅ Upload to Cloudinary
+    const uploadToCloudinary = async (file) => {
       const result = await cloudinary.uploader.upload(file.path, {
         folder: "drivers_docs",
         resource_type: "auto",
         use_filename: true,
-        unique_filename: true
+        unique_filename: true,
       });
 
-      // ✅ Delete local file after upload
       try {
         fs.unlinkSync(file.path);
       } catch (err) {
@@ -210,59 +114,59 @@ export const driverSignup = async (req, res) => {
       return result.secure_url;
     };
 
-    // ✅ Upload required documents
-    let aadhaarUrl = null,
-        licenseUrl = null,
-        photoUrl = null;
-
-    // console.log("Uploaded files:", {
-    //   aadhaar: req.files["aadhaar"]?.[0]?.originalname,
-    //   license: req.files["license"]?.[0]?.originalname,
-    //   photo: req.files["photo"]?.[0]?.originalname
-    // });
+    let aadhaarUrl, licenseUrl, photoUrl;
 
     try {
-      aadhaarUrl = await uploadToCloudinary(req.files["aadhaar"][0], "aadhaar");
-      licenseUrl = await uploadToCloudinary(req.files["license"][0], "license");
-      photoUrl = await uploadToCloudinary(req.files["photo"][0], "photo");
+      aadhaarUrl = await uploadToCloudinary(req.files["aadhaar"][0]);
+      licenseUrl = await uploadToCloudinary(req.files["license"][0]);
+      photoUrl = await uploadToCloudinary(req.files["photo"][0]);
     } catch (uploadError) {
       console.error("Cloudinary upload error:", uploadError);
       return res.status(500).json({ message: "File upload failed. Please try again." });
     }
 
-    // ✅ Create driver profile
-    const newDriverProfile = new DriverProfile({
+    // ✅ Save to DB
+    const newDriver = new DriverProfile({
       name,
       email,
       password: hashedPassword,
       phoneNumber,
+      aadhaarNumber,
+      dateOfBirth: parsedDOB,
+      bloodGroup,
+      licenseNumber,
+      address,
       aadhaarUrl,
       licenseUrl,
       photoUrl
     });
 
-    await newDriverProfile.save();
+    await newDriver.save();
 
-    // ✅ Generate JWT token
+    // ✅ Generate token
     const token = jwt.sign(
-      { id: newDriverProfile._id },
+      { id: newDriver._id },
       process.env.JWT_SECRET || "WSOUGUUTSETA",
       { expiresIn: "7d" }
     );
 
-    // ✅ Send success response
     res.status(201).json({
       message: "Signup successful",
       token,
       driver: {
-        id: newDriverProfile._id,
-        name: newDriverProfile.name,
-        email: newDriverProfile.email,
-        phoneNumber: newDriverProfile.phoneNumber,
+        id: newDriver._id,
+        name: newDriver.name,
+        email: newDriver.email,
+        phoneNumber: newDriver.phoneNumber,
+        aadhaarNumber: newDriver.aadhaarNumber,
+        dateOfBirth: newDriver.dateOfBirth,
+        bloodGroup: newDriver.bloodGroup,
+        licenseNumber: newDriver.licenseNumber,
+        address: newDriver.address,
         aadhaarUrl,
         licenseUrl,
         photoUrl,
-        createdAt: newDriverProfile.createdAt
+        createdAt: newDriver.createdAt,
       }
     });
 
@@ -271,7 +175,6 @@ export const driverSignup = async (req, res) => {
     res.status(500).json({ message: "Something went wrong!" });
   }
 };
-
 
 
 
